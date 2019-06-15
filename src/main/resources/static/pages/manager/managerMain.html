@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>餐厅审批</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        window.onload = function () {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/getUnApprovedRes",
+                data: {},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            setRestaurantTable(data.restaurants);
+                    }
+                }
+            });
+        };
+
+        function setRestaurantTable(restaurants) {
+            var str = "";
+            $.each(restaurants, function (i) {
+               str += "<tr><td>" + restaurants[i].name + "</td><td>" + restaurants[i].type + "</td><td>" +
+                    restaurants[i].phone + "</td><td>" + restaurants[i].addressByAid.description + "</td><td>" +
+                    restaurants[i].description + "</td><td><input type='checkbox' class='form-control' value='" +
+                    restaurants[i].rid + "' style='width: 15px;height: 15px'></td></tr>";
+            });
+            if (str == "") {
+                str = "<tr><td colspan='6'>没有需要审批的餐厅信息！</td></tr>";
+            }
+            $("#restaurantTable").html(str);
+        }
+    </script>
+</head>
+<body>
+<style>
+    .navbar{
+        position: relative;
+        min-height: 50px;
+        margin-bottom: 1px;
+        background-color: #2492d6;
+        border: 1px solid transparent;
+    }
+    a{
+        color: white;
+    }
+    .input-group a{
+        color: black;
+        font-size: 16px;
+    }
+</style>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li style="width: 120px;text-align: center"><a href="/manager_main">餐厅审批</a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                        数据统计
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/manager_statistics">用户统计</a></li>
+                        <li><a href="/manager_income">收入统计</a></li>
+                        <li><a href="/login">登出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div class="btn-group" style="float: right">
+        <button class="btn btn-info" onclick="chooseAll()">全选</button>
+        <button class="btn btn-primary" onclick="approve()">一键审批</button>
+    </div>
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <td>餐厅名</td>
+            <td>餐厅类别</td>
+            <td>联系电话</td>
+            <td>餐厅地址</td>
+            <td>餐厅描述</td>
+            <td> </td>
+        </tr>
+        </thead>
+        <tbody id="restaurantTable"></tbody>
+    </table>
+</div>
+<div class="modal fade" id="noChosenModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    提示
+                </h4>
+            </div>
+            <div class="modal-body">
+                未选择要审批通过的餐厅！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<script>
+    function chooseAll() {
+        var obj = $("input[type='checkbox']");
+        for (var i = 0; i < obj.length; i++) {
+            var chk = obj[i];
+            chk.checked = true;
+        } 
+    }
+    function approve() {
+        var obj = $("input[type='checkbox']");
+        var chk_val=[];
+        for (var i = 0; i < obj.length; i++) {
+            var chk = obj[i];
+            if (chk.checked) {
+                chk_val.push(chk.value);
+            }
+        }
+        console.log(chk_val);
+        if (chk_val.length === 0) {
+            $("#noChosenModal").modal("show");
+        } else {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/approveRestaurant",
+                data: {rids:chk_val},
+                dataType: 'json',
+                traditional: true,
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            setRestaurantTable(data.restaurants);
+                    }
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>

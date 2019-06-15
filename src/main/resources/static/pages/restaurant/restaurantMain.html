@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>餐厅首页——Yummy!</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        window.onload=function () {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/getUnresolvedOrders",
+                data: {},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            $("#userName").html(data.rName + "<b class='caret'></b>");
+                            setOrderTable(data.orders);
+                    }
+                }
+            });
+        };
+
+        function setOrderTable(orderList) {
+            var str = "";
+            $.each(orderList, function (i) {
+               str += "<tr><td>" + orderList[i].oid + "</td><td>" + orderList[i].orderTimeString + "</td><td>" +
+                       orderList[i].memberName + "</td><td>" + orderList[i].content + "</td><td>" +
+                       orderList[i].address + "</td><td>" + orderList[i].cost + "</td></tr>"
+            });
+            if (str == "") {
+                str = "<tr><td colspan='6'>没有需要处理的订单哦！</td></tr>"
+            }
+            $("#orderTable").html(str);
+            $("#orderTable tr").click(function () {
+                var td = $(this).find("td");
+                if (td.length > 1) {
+                    var oid = td.eq(0).html();
+                    $("#orderID").html(oid);
+                    getOrderInfo(oid);
+                    $("#orderInfoModal").modal("show");
+                }
+
+            });
+        }
+
+        function getOrderInfo(oid) {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/getOrderInfoForRestaurant",
+                data: {oid:oid},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    $("#orderID").text(data.order.oid);
+                    $("#orderTime").text(data.order.orderTimeString);
+                    $("#memberName").text(data.memberName);
+                    $("#phone").text(data.phone);
+                    $("#address").text(data.order.address);
+                    $("#cost").text(data.order.cost);
+                    setOrderInfoTable(data.order.singlesCollection, data.order.packagesCollection);
+                }
+            });
+        }
+
+        function setOrderInfoTable(singleList, packageList) {
+            var str = "";
+            $.each(singleList, function (i) {
+                str += "<tr><td>" + singleList[i].name + "</td><td>" + singleList[i].orderNum + "</td><td>" + singleList[i].cost + "</td></tr>"
+            });
+            $.each(packageList, function (i) {
+                str += "<tr><td>" + packageList[i].name + "</td><td>" + packageList[i].orderNum + "</td><td>" + packageList[i].cost + "</td></tr>"
+            });
+            $("#orderInfoTable").html(str);
+        }
+
+        function deliveryOrder() {
+            var oid = $("#orderID").text();
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/deliveryOrder",
+                data: {oid:oid},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = "/login";
+                            break;
+                        case 'success':
+                            $("#orderInfoModal").modal("hide");
+                            $("#deliveryModal").modal("show");
+                            setOrderTable(data.orders);
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<style>
+    .navbar{
+        position: relative;
+        min-height: 50px;
+        margin-bottom: 1px;
+        background-color: #2492d6;
+        border: 1px solid transparent;
+    }
+    a{
+        color: white;
+    }
+    .input-group a{
+        color: black;
+        font-size: 16px;
+    }
+</style>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li style="width: 120px;text-align: center"><a href="/restaurant_main">订单处理</a></li>
+                <li style="width: 120px;text-align: center"><a href="/restaurant_goods">商品发布</a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                        userName
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/restaurant_profile">餐厅资料</a></li>
+                        <li><a href="/restaurant_orders">订单统计</a></li>
+                        <li><a href="/restaurant_income">收入统计</a></li>
+                        <li><a href="/login">登出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="col-sm-12">
+    <table class="table table-bordered table-hover table-striped">
+        <thead>
+        <tr>
+            <th>订单号</th>
+            <th>订单时间</th>
+            <th>会员姓名</th>
+            <th>订单内容</th>
+            <th>送货地址</th>
+            <th>订单金额(/元)</th>
+        </tr>
+        </thead>
+        <tbody id="orderTable">
+        <tr>
+            <td>9843092849028490238</td>
+            <td>2019.01.10 12:23:23</td>
+            <td>大罗</td>
+            <td>xxx等</td>
+            <td>南京大学鼓楼校区</td>
+            <td>123</td>
+        </tr>
+        </tbody>
+
+    </table>
+</div>
+<div class="modal fade" id="orderInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    订单详情
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label>订单号</label>
+                <p id="orderID"></p>
+                <label>订单时间</label>
+                <p id="orderTime"></p>
+                <label>会员名</label>
+                <p id="memberName"></p>
+                <label>联系方式</label>
+                <p id="phone"></p>
+                <label>送货地址</label>
+                <p id="address"></p>
+                <label>金额总计</label>
+                <p id="totalMoney"></p>
+                <table class="table table-bordered table-hover">
+                    <thead>
+                    <tr>
+                        <th>餐品名</th>
+                        <th>数量</th>
+                        <th>金额</th>
+                    </tr>
+                    </thead>
+                    <tbody id="orderInfoTable">
+                    <tr>
+                        <td>mealName</td>
+                        <td>mealNum</td>
+                        <td>money</td>
+                    </tr>
+                    <tr>
+                        <td>mealName</td>
+                        <td>mealNum</td>
+                        <td>money</td>
+                    </tr>
+                    <tr>
+                        <td>mealName</td>
+                        <td>mealNum</td>
+                        <td>money</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="deliveryOrder()">配送</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="deliveryModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    成功
+                </h4>
+            </div>
+            <div class="modal-body">
+                该订单已成功配送！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</body>
+</html>

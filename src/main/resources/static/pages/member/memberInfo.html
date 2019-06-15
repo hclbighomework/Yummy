@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人中心——Yummy!</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-select/1.13.3/js/i18n/defaults-zh_CN.js"></script>
+    <script>
+        var levelLimit = [100, 200, 300, 400, 999];
+        window.onload = function () {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/getMemberProfile",
+                data: {},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            $("#userName").html(data.member.name + "<b class='caret'></b>");
+                            $("#userID").text(data.member.email);
+                            $("#name").text(data.member.name);
+                            $("#phone").text(data.member.phone);
+                            $("#balance").text(data.member.balance);
+                            $("#level").text("会员等级Lv" + data.member.level);
+                            var pct = data.member.experience / levelLimit[data.member.level - 1] * 100;
+                            $("#process").css('width', pct + "%").attr('title', data.member.experience + "/" + levelLimit[data.member.level - 1]);
+                            var str = "";
+                            $.each(data.allAddress, function (i) {
+                                str += "<option>" + data.allAddress[i] + "</option>"
+                            });
+                            $("#newAddress").append(str).selectpicker("refresh");
+                            $("#modifyAddress").append(str).selectpicker("refresh");
+                            setAddressTable(data.member.addressCollection);
+                    }
+                }
+            });
+        };
+
+        function setAddressTable(addressList) {
+            var str = "";
+            $.each(addressList, function (i) {
+               str += "<tr><td id='" + i + "'>" + addressList[i].description + "</td><td>" + (addressList[i].defaultState == 1 ? "是" : "否") + "</td><td>" +
+                       "<div class='btn-group'>" + "<button class='btn btn-primary' onclick='setDefault(" + i + ")' " + (addressList[i].defaultState == 1 ? "disabled" : "") + ">设为默认地址</button>" +
+                       "<button class='btn btn-info' onclick='modify(" + i + ")'>修改</button>" +
+                       "<button class='btn btn-danger' onclick='deleteAddress(" + i + ")'>删除</button>" +
+                       "</div></td>"
+            });
+            if (str == "") {
+                str = "<tr><td colspan='2'>您还未添加地址</td></tr>";
+            }
+            $("#addressTable").html(str);
+        }
+
+        function recharge() {
+            var money = $("#recharge").val();
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/recharge",
+                data: {money:money},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case "error":
+                            window.location.href = "/login";
+                            break;
+                        case "success":
+                            balance = balance + data.balance;
+                            $("#balanceModal").modal("hide");
+                            $("#newBalance").text("当前余额为" + data.balance + "元");
+                            $("#rechargeModal").modal("show");
+                    }
+                }
+            });
+        }
+
+        function updateInfo() {
+            var newName = $("#newName").val();
+            var newPhone = $("#newPhone").val();
+            if (newName == "" || newPhone == "") {
+                $("#noInputModal").modal("show");
+            } else if (isPhone(newPhone)) {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/updateMemberInfo",
+                    data: {newName:newName, newPhone:newPhone},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                                window.location.href = '/login';
+                                break;
+                            case 'success':
+                                $("#name").text(data.name);
+                                $("#phone").text(data.phone);
+                                $("#infoModal").modal("hide");
+                                $("#updateInfoModal").modal("show");
+                        }
+                    }
+                });
+            } else {
+                $("#phoneErrorModal").modal("show");
+            }
+
+        }
+
+        function updatePassword() {
+            var oldPassword = $("#oldPassword").val();
+            var newPassword = $("#newPassword").val();
+            var againPassword = $("#againPassword").val();
+            if (oldPassword == "" || newPassword == "" || againPassword == "") {
+                $("#noInputModal").modal("show");
+            } else if (newPassword != againPassword) {
+                $("#differentModal").modal("show");
+            } else {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/updateMemberPassword",
+                    data: {oldPassword:oldPassword, newPassword:newPassword},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                                window.location.href = '/login';
+                                break;
+                            case 'old':
+                                $("#oldErrorModal").modal("show");
+                                break;
+                            case 'success':
+                                window.location.href = '/login';
+                        }
+                    }
+                });
+            }
+        }
+
+        function modifyBalance() {
+            $("#balanceModal").modal("show");
+        }
+        function modifyInfo() {
+            $("#infoModal").modal("show");
+        }
+        function modifyPassword() {
+            $("#passwordModal").modal("show");
+        }
+        function addAddress() {
+            $("#addressModal").modal("show");
+        }
+        function del() {
+            $("#deleteModal").modal("show");
+        }
+        function deleteMember() {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/deleteMember",
+                data: {},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    window.location.href = "/login";
+                }
+            });
+        }
+        function setDefault(id) {
+            var description = $("#" + id).html();
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/setDefault",
+                data: {description:description},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            setAddressTable(data.addressList);
+                    }
+                }
+            });
+        }
+
+        function modify(id) {
+            var description = $("#" + id).html();
+            $("#oldAddress").val(description);
+            $("#updateAddressModal").modal("show");
+        }
+
+        function modifyAddress() {
+            var oldAddress = $("#oldAddress").val();
+            var newAddress = $("#modifyAddress").val();
+            if (oldAddress != newAddress) {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/updateAddress",
+                    data: {oldAddress:oldAddress, newAddress:newAddress},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                                window.location.href = '/login';
+                                break;
+                            case 'address':
+                                $("#errorAddressModal").modal("show");
+                                break;
+                            case 'success':
+                                $("#updateAddressModal").modal("hide");
+                                setAddressTable(data.addressList);
+                        }
+                    }
+                });
+            }
+        }
+
+        function add() {
+            var newAddress = $("#newAddress").val();
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/addAddress",
+                data: {newAddress:newAddress},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'address':
+                            $("#errorAddressModal").modal("show");
+                            break;
+                        case 'success':
+                            $("#addressModal").modal("show");
+                            setAddressTable(data.addressList);
+                    }
+                }
+            });
+        }
+
+        function deleteAddress(id) {
+            var description = $("#" + id).html();
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/deleteAddress",
+                data: {description:description},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            setAddressTable(data.addressList);
+                    }
+                }
+            });
+        }
+
+        function isPhone(phone) {
+            var reg=/^[1][3,5,7,8][0-9]{9}$/;
+            if (!reg.test(phone)) {
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+<style>
+    .navbar{
+        position: relative;
+        min-height: 50px;
+        margin-bottom: 1px;
+        background-color: #2492d6;
+        border: 1px solid transparent;
+    }
+    a{
+        color: white;
+    }
+    .input-group a{
+        color: black;
+        font-size: 16px;
+    }
+    .container p, label{
+        font-size: 16px;
+    }
+</style>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li style="width: 120px;text-align: center"><a href="/member_main">首页</a></li>
+                <li style="width: 120px;text-align: center"><a href="/member_order">我的订单</a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                        userName
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/member_profile">个人中心</a></li>
+                        <li><a href="/member_consume">消费统计</a></li>
+                        <li><a href="/login">登出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container" style="float: left;width: 300px;position:absolute;top: 10%;left: 10%">
+    <h2 style="font-weight: bold">个人信息</h2>
+    <label for="userID">邮箱</label>
+    <p id="userID"></p>
+    <label for="name">姓名</label>
+    <p id="name"></p>
+    <label for="phone">手机号</label>
+    <p id="phone"></p>
+    <label for="balance">余额</label>
+    <p id="balance"></p>
+    <label id="level">会员等级Lv5</label>
+    <div class="progress">
+        <div class="progress-bar progress-bar-info" role="progressbar"
+             aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+             style="width: 30%;" data-toggle="tooltip" title="300/1000" id="process">
+        </div>
+    </div>
+    <br/>
+    <div class="button-group">
+        <button class="btn btn-info" style="width: 85px" onclick="modifyBalance()">充值</button>
+        <button class="btn btn-primary" style="width: 85px" onclick="modifyInfo()">修改信息</button>
+        <button class="btn btn-warning" style="width: 85px" onclick="modifyPassword()">密码管理</button>
+    </div>
+    <br/>
+    <button class="btn btn-danger" style="width: 98%" onclick="del()">注销账号</button>
+</div>
+<div class="col-sm-6" style="position: absolute;right: 10%">
+    <h2 style="font-weight: bold;float:left;">地址管理
+        <img src="../../image/add.png" data-toggle="tooltip" title="单击增加新地址" style="width: 15px;height: 15px" onclick="addAddress()">
+    </h2>
+    <table class="table table-bordered table-hover"  style="text-align: center;position:absolute;top: 90%;">
+        <thead>
+        <tr>
+            <th>地址信息</th>
+            <th>是否默认</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody id="addressTable">
+        </tbody>
+
+    </table>
+</div>
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    个人信息修改
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label for="newName">姓名</label>
+                <input class="form-control" id="newName">
+                <label for="newPhone">手机号</label>
+                <input class="form-control" id="newPhone">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="updateInfo()">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    密码修改
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label for="oldPassword">原密码</label>
+                <input type="password" class="form-control" id="oldPassword">
+                <label for="newPassword">新密码</label>
+                <input type="password" class="form-control" id="newPassword">
+                <label for="againPassword">再次确认</label>
+                <input type="password" class="form-control" id="againPassword">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="updatePassword()">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">地址新增</h4>
+            </div>
+            <div class="modal-body">
+                <label for="newAddress">地址</label>
+                <select class="form-control show-tick selectpicker" data-live-search="true" id="newAddress">
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="add()">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="rechargeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    充值成功！！
+                </h4>
+            </div>
+            <div class="modal-body">
+                <p id="newBalance">当前余额为</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="balanceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    充值
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label for="recharge">请输入充值金额</label>
+                <input type="number" class="form-control" id="recharge" min="0">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="recharge()">充值</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="updateInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    成功
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label for="recharge">成功更新个人信息！！</label>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="phoneErrorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                您输入的手机号不正确！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="noInputModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                您还有必要信息未输入！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="differentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                两次输入的密码不同！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="oldErrorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                原密码输入错误！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    警告
+                </h4>
+            </div>
+            <div class="modal-body">
+                该操作无法撤销，注销后该账号将无法使用！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="deleteMember()">确认</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="updateAddressModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    地址修改
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label for="oldAddress">原地址</label>
+                <input id="oldAddress" class="form-control" disabled>
+                <label for="modifyAddress">新地址</label>
+                <select class="form-control show-tick selectpicker" data-live-search="true" id="modifyAddress"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="modifyAddress()">确认</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="errorAddressModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                该地址已存在，不可添加！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确认</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</body>
+</html>

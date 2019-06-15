@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        var rName = "";
+        var restaurant = new Object();
+        var singleName = [];
+        var singleNum = [];
+        var packageName= [];
+        var packageNum = [];
+        window.onload = function () {
+            var url = window.location.search;
+            rName = decodeURI(url.substr(url.indexOf("=") + 1));
+            $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/getShoppingInfo",
+                    data: {rName: rName},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case "error":
+                                window.location.href = "/login";
+                                break;
+                            case "success":
+                                restaurant = data.restaurant;
+                                document.title = rName + "——Yummy!";
+                                $("#userName").html(data.username + "<b class='caret'></b>");
+                                $("#rName").text(rName);
+                                $("#minCost").text(data.restaurant.minCost + "元");
+                                $("#humanCost").text(data.restaurant.humanCost + "元");
+                                $("#description").text(data.restaurant.description);
+                                setReductionTable(data.restaurant.reductionsByRid);
+                                setSingleTable(data.restaurant.singlesByRid);
+                                setPackageTable(data.restaurant.packagesByRid);
+
+                        }
+                    }
+                }
+            );
+        };
+        $(function() {
+            $("[data-toggle='popover']").popover({
+                html : true,
+                title: "商家信息",
+                delay:{show:500, hide:1000},
+                content: function() {
+                    return content();
+                }
+            });
+        });
+
+        function setReductionTable(reductionList) {
+            var str = "";
+            $.each(reductionList, function (i) {
+                str += "<tr><td>" + reductionList[i].fullCost +
+                    "</td><td>" + reductionList[i].reduceCost + "</td></tr>";
+            });
+            if (str == "") {
+                str += "<tr><td colspan='2'>无满减优惠</td></tr>"
+            }
+            $("#reductionTable").html(str);
+        }
+
+        function setSingleTable(singleList) {
+            var str = "";
+            $.each(singleList, function (i) {
+                str += "<tr><td>" + singleList[i].name + "</td><td>" + singleList[i].cost +
+                    "</td><td>" + singleList[i].type + "</td><td>" +
+                    singleList[i].discount + "</td><td>" +
+                    singleList[i].num + "</td><td>" +
+                    "<input type='number' class='form-control' style='border: none;overflow: hidden;height: 100%;width: 100%;' min='0' max='" +
+                    singleList[i].num + "' value='0'></td></tr>"
+            });
+            $("#singleTable").html(str);
+        }
+
+        function setPackageTable(packageList) {
+            var str = "";
+            $.each(packageList, function (i) {
+                str += "<tr><td>" + packageList[i].name + "</td><td>" + packageList[i].cost +
+                    "</td><td>" + packageList[i].type + "</td><td>" +
+                    packageList[i].discount + "</td><td>" +
+                    packageList[i].num + "</td><td>" +
+                    "<input type='number' class='form-control' style='border: none;overflow: hidden;height: 100%;width: 100%;' min='0' max='" +
+                    packageList[i].num + "' value='0'></td></tr>"
+            });
+            $("#packageTable").html(str);
+            $("#packageTable td").click(function () {
+                var index = $(this).parents("tr").find("td").index($(this));
+                if (index < 5) {
+                    var pName = $(this).closest("tr").find("td").eq(0).html();
+                    console.log(pName);
+                    showPackage(pName);
+                    $("#packageInfoModal").modal("show");
+                }
+
+            });
+        }
+        
+        function showPackage(pName) {
+            $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/getPackageInfo",
+                    data: {rName: rName, pName: pName},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        var str = "";
+                        $.each(data.packageInfo.singlesCollection, function (i) {
+                           str += "<tr><td>" + data.packageInfo.singlesCollection[i].name +
+                               "</td><td>" + data.packageInfo.singlesCollection[i].packageNum + "</td></tr>";
+                        });
+                        $("#packageInfoTable").html(str);
+                    }
+                }
+            );
+        }
+
+        function singleSorted(type) {
+            $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/singleSorted",
+                    data: {rName: rName, sort:type},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        setSingleTable(data.singleList);
+                    }
+                }
+            );
+        }
+
+        function packageSorted(type) {
+            $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/packageSorted",
+                    data: {rName: rName, sort:type},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        setPackageTable(data.packageList);
+                    }
+                }
+            );
+        }
+
+        function content() {
+            var rid = restaurant.rid;
+            var address = restaurant.addressByAid.description;
+            var phone = restaurant.phone;
+            return $("<p class='text-muted'>识别码：" + rid + "</p><p class='text-muted'>商家地址："
+                + address + "</p><p class='text-muted'>商家电话：" + phone + "</p>");
+        }
+
+        function shop() {
+            singleNum = [];
+            singleName = [];
+            packageName = [];
+            packageNum = [];
+            var money = 0;
+            var str = "";
+            $("#singleTable tr").each(function () {
+               var td = $(this).find("td");
+               var name = td.eq(0).html();
+               var cost = td.eq(1).html();
+               var discount = td.eq(3).html();
+               var num = td.eq(4).html();
+               var input = td.eq(5).find("input").val();
+               if (input > 0 && input <= parseInt(num)) {
+                   singleName.push(name);
+                   singleNum.push(input);
+                   str += "<tr><td>" + name + "</td><td>" + cost +
+                       "</td><td>" + discount +
+                       "</td><td>" + input + "</td></tr>";
+                   money += cost * discount * input * 0.01;
+               }
+            });
+            $("#packageTable tr").each(function () {
+                var td = $(this).find("td");
+                var name = td.eq(0).html();
+                var cost = td.eq(1).html();
+                var discount = td.eq(3).html();
+                var num = td.eq(4).html();
+                var input = td.eq(5).find("input").val();
+                if (input > 0 && input <= parseInt(num)) {
+                    packageName.push(name);
+                    packageNum.push(input);
+                    str += "<tr><td>" + name + "</td><td>" + cost +
+                        "</td><td>" + discount +
+                        "</td><td>" + input + "</td></tr>";
+                    money += cost * discount * input * 0.01;
+                }
+            });
+            for (var i = 0; i < restaurant.reductionsByRid.length - 1; i++) {
+                if (money >= restaurant.reductionsByRid[i].fullCost && money < restaurant.reductionsByRid[i + 1].fullCost) {
+                    money = money - restaurant.reductionsByRid[i].reduceCost;
+                    break;
+                }
+            }
+            if (money >= restaurant.reductionsByRid[restaurant.reductionsByRid.length - 1].fullCost) {
+                money = money - restaurant.reductionsByRid[restaurant.reductionsByRid.length - 1].reduceCost;
+            }
+            money += restaurant.humanCost;
+            $("#totalMoney").html(money);
+            $("#orderTable").html(str);
+            if ((singleName.length === 0 && packageName.length === 0) || money < restaurant.minCost) {
+                $("#payBtn").attr('disabled', true);
+            } else {
+                $("#payBtn").attr('disabled', false);
+            }
+            $("#shoppingInfoModal").modal("show");
+        }
+
+        function setOrder() {
+            console.log(singleName);
+            var note = $("#noteArea").val();
+            var cost = $("#totalMoney").html();
+            console.log(cost);
+            $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/setOrder",
+                    data: {singleName: singleName, singleNum: singleNum, packageName: packageName, packageNum: packageNum, rName:rName, note:note, cost:cost},
+                    dataType: 'json',
+                    traditional:true,
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case "success":
+                                window.location.href = "/order_detail?oid=" + data.oid;
+                                break;
+                            default:
+                                window.location.href = "/login";
+                        }
+                    }
+                }
+            );
+        }
+    </script>
+</head>
+<body>
+<style>
+    .navbar{
+        position: relative;
+        min-height: 50px;
+        margin-bottom: 1px;
+        background-color: #2492d6;
+        border: 1px solid transparent;
+    }
+    a{
+        color: white;
+    }
+    .input-group a{
+        color: black;
+        font-size: 16px;
+    }
+</style>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li style="width: 120px;text-align: center"><a href="/member_main">首页</a></li>
+                <li style="width: 120px;text-align: center"><a href="/member_order">我的订单</a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                        userName
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/member_profile">个人中心</a></li>
+                        <li><a href="/member_consume">消费统计</a></li>
+                        <li><a href="/login">登出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="col-sm-3" style="text-align: center">
+    <label id="rName" style="font-size: 32px" data-toggle="popover" data-placement="bottom" data-trigger="hover">restaurantName</label>
+</div>
+<div class="col-sm-6" style="float: right; text-align: center;font-size: 18px;height: 25px">
+    <label style="position: absolute;left: 20%">起送费</label>
+    <label id="minCost" style="position: absolute;left: 22%;top: 100%;">20元</label>
+    <label style="position:absolute;right: 40%;">配送费</label>
+    <label id="humanCost" style="position: absolute;right: 42%;top: 100%;">4元</label>
+</div>
+<div class="col-sm-8 container-fluid" style="position: absolute;top: 150px;">
+    <div class="panel panel-default" id="single">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#single"
+                   href="#collapseOne">
+                    单品列表
+                </a>
+            </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse in">
+            <div class="btn-group" style="float: right;">
+                <button class="btn btn-default" onclick="singleSorted('default')">默认排序</button>
+                <button class="btn btn-default" onclick="singleSorted('desc')">价格&ensp;&darr;</button>
+                <button class="btn btn-default" onclick="singleSorted('asc')">价格&ensp;&uarr;</button>
+            </div>
+            <table class="table table-bordered table-hover table-striped" style="text-align: center">
+                <thead style="font-size: 16px">
+                <tr>
+                    <th>菜品名</th>
+                    <th>价格(/元)</th>
+                    <th>类别</th>
+                    <th>折扣(%)</th>
+                    <th>剩余数量</th>
+                    <th>购买数量</th>
+                </tr>
+                </thead>
+                <tbody style="font-size: 16px" id="singleTable">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="panel panel-default" id="package">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#package" href="#collapseTwo">
+                    套餐列表
+                </a>
+            </h4>
+        </div>
+        <div id="collapseTwo" class="panel-collapse collapse in">
+            <div class="btn-group" style="float: right;">
+                <button class="btn btn-default" onclick="packageSorted('default')">默认排序</button>
+                <button class="btn btn-default" onclick="packageSorted('desc')">价格&ensp;&darr;</button>
+                <button class="btn btn-default" onclick="packageSorted('asc')">价格&ensp;&uarr;</button>
+            </div>
+            <table class="table table-bordered table-hover table-striped" style="text-align: center">
+                <thead style="font-size: 16px">
+                <tr>
+                    <th>菜品名</th>
+                    <th>价格(/元)</th>
+                    <th>类别</th>
+                    <th>折扣(%)</th>
+                    <th>剩余数量</th>
+                    <th>购买数量</th>
+                </tr>
+                </thead>
+                <tbody style="font-size: 16px" id="packageTable">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+<div class="col-sm-4" style="position: absolute;top: 130px;right: 10px;">
+    <h3 style="background-color: #2492d6;color: white;text-align: center">商家有话说</h3>
+    <p id="description" style="font-size: 15px;font-weight: lighter"></p>
+</div>
+<div class="col-sm-4" style="position: absolute;top: 300px;right: 10px;">
+    <h3 style="background-color: #2492d6;color: white;text-align: center">满减优惠表</h3>
+    <table class="table table-bordered table-hover table-striped" style="text-align: center">
+        <thead style="font-size: 16px">
+        <tr>
+            <th>满额(/元)</th>
+            <th>减额(/元)</th>
+        </tr>
+        </thead>
+        <tbody style="font-size: 16px" id="reductionTable">
+        </tbody>
+    </table>
+</div>
+<div class="col-sm-1" style="position: fixed; right: 5px;bottom: 10px">
+    <button class="btn btn-primary" onclick="shop()"><img src="../../image/shopping.png" style="width: 25px;height: 25px">购物车</button>
+</div>
+<div class="modal fade" id="shoppingInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    购物车
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label>金额总计</label>
+                <p id="totalMoney"></p>
+                <table class="table table-bordered table-hover" style="text-align: center">
+                    <tr>
+                        <th>菜品名</th>
+                        <th>价格(/元)</th>
+                        <th>折扣(%)</th>
+                        <th>购买数量</th>
+                    </tr>
+                    <tbody style="font-size: 16px" id="orderTable">
+                    </tbody>
+                </table>
+                <label for="noteArea">备注</label>
+                <textarea class="form-control" id="noteArea">无</textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="payBtn" onclick="setOrder()">支付</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    关闭
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="packageInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    套餐内容
+                </h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-hover" style="text-align: center">
+                    <tr>
+                        <th>菜品名</th>
+                        <th>数量</th>
+                    </tr>
+                    <tbody style="font-size: 16px" id="packageInfoTable">
+                    </tbody>
+
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    关闭
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="../css/LoginCSS.css" rel="stylesheet" type="text/css"/>
+    <meta charset="UTF-8">
+    <title>登录</title>
+</head>
+<body>
+<img src="../image/yummy.png">
+<div class="container" style="width: 300px; height: 400px; background-color: #dce0ff;">
+    <form role="form">
+        <h2 style="text-align: center">登录</h2>
+        <div class="form-group">
+            <label for="userID">账号</label>
+            <input type="text" class="form-control" id="userID">
+        </div>
+        <div class="form-group">
+            <label for="password">密码</label>
+            <input type="password" class="form-control" id="password">
+        </div>
+        <label>请选择您的身份</label>
+        <div>
+            <label class="radio-inline">
+                <input type="radio" name="userType" value="member" checked> 会员
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="userType" value="restaurant">餐厅
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="userType" value="manager"> 经理
+            </label>
+        </div>
+        <br/>
+        <br/>
+        <button type="button" class="btn btn-primary btn-block" onclick="valid()">登录</button>
+        <button type="button" class="btn btn-default btn-block" onclick="register()">注册</button>
+
+    </form>
+</div>
+<!-- 模态框 -->
+<div class="modal fade" id="loginErrorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    登录失败
+                </h4>
+            </div>
+            <div class="modal-body" id="errorMessage">
+                您的账号或密码有误，请重新输入！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<div class="modal fade" id="noInputModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                您还有必要信息未输入！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    注册身份
+                </h4>
+            </div>
+            <div class="modal-body">
+                请选择您要注册的身份！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="memberRegister()">会员注册</button>
+                <button type="button" class="btn btn-primary" onclick="restaurantRegister()">餐厅注册</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<script>
+    function valid() {
+        var userID = $("#userID").val();
+        var password = $("#password").val();
+        var userType = $("input[name='userType']:checked").val();
+        console.log(userID + " " + password + " " + userType);
+        if (userID == "" || password == "" || userType == "") {
+            $("#noInputModal").modal("show");
+        } else {
+            switch (userType) {
+                case "member":
+                    loginForMember(userID, password);
+                    break;
+                case "restaurant":
+                    loginForRestaurant(userID, password);
+                    break;
+                case "manager":
+                    loginForManager(userID, password);
+                    break;
+                default:
+                    alert("There is something wrong!");
+            }
+
+
+        }
+
+    }
+
+    function loginForMember(userID, password) {
+        $.ajax({
+            type: "post",
+            async: true,
+            url: "/loginForMember",
+            data: {userID: userID, password: password},
+            dataType: 'json',
+            success: function (data) {
+                console.log(data);
+                switch (data.message) {
+                    case "noMember" :
+                        $("#errorMessage").text("账号或密码错误！！！");
+                        $("#loginErrorModal").modal("show");
+                        break;
+                    case "inactive" :
+                        $("#errorMessage").text("该账户未激活，请注意邮箱中的激活邮件！！！");
+                        $("#loginErrorModal").modal("show");
+                        break;
+                    case "deleted" :
+                        $("#errorMessage").text("该账户已注销！！！");
+                        $("#loginErrorModal").modal("show");
+                        break;
+                    case "success" :
+                        window.location.href = "/member_main";
+                        break;
+                    default :
+                        alert("There is something wrong");
+                }
+            }
+        })
+    }
+
+    function loginForRestaurant(userID, password) {
+        $.ajax({
+            type: "post",
+            async: true,
+            url: "/loginForRestaurant",
+            data: {userID: userID, password: password},
+            dataType: 'json',
+            success: function (data) {
+                console.log(data);
+                switch (data.message) {
+                    case "noRestaurant" :
+                        $("#errorMessage").text("账号或密码错误！！！");
+                        $("#loginErrorModal").modal("show");
+                        break;
+                    case "unApproved" :
+                        $("#errorMessage").text("餐厅信息审核中，请等待管理员审批！！！");
+                        $("#loginErrorModal").modal("show");
+                        break;
+                    case "success" :
+                        window.location.href = "/restaurant_main";
+                        break;
+                    default :
+                        alert("There are something wrong");
+                }
+            }
+        })
+    }
+
+    function loginForManager(userID, password) {
+        $.ajax({
+            type: "post",
+            async: true,
+            url: "/loginForManager",
+            data: {userID: userID, password: password},
+            dataType: 'json',
+            success: function (data) {
+                console.log(data);
+                switch (data.message) {
+                    case "error" :
+                        $("#errorMessage").text("账号或密码错误！！！");
+                        $("#loginErrorModal").modal("show");
+                        break;
+                    case "success" :
+                        window.location.href = "/manager_main";
+                        break;
+                    default :
+                        alert("There are something wrong");
+                }
+            }
+        })
+    }
+
+    function register() {
+        $("#registerModal").modal("show");
+    }
+
+    function memberRegister() {
+        window.location.href = "/member_register";
+    }
+
+    function restaurantRegister() {
+        window.location.href = "/restaurant_register";
+    }
+</script>
+</body>
+</html>

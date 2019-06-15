@@ -1,0 +1,13 @@
+body {
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arail, Helvetica, sans-serif;
+    font-size: 12px;
+    height: 600px;
+    background-size:cover;
+    background: #CCCCCC url("../image/login_back.jpg") fixed center center;
+}
+
+p, h1, form, button {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}

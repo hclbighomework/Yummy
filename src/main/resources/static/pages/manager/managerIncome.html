@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>收入统计</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script>
+        window.onload = function () {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/getIncomeStatistics",
+                data: {},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            $("#totalMoney").text("总收入额：" + data.money + "元");
+                            $("#orderNum").text("总订单数：" + data.num + "份");
+                            setMoneyCharts(data.statistics);
+                            setNumCharts(data.statistics);
+                    }
+                }
+            });
+        };
+
+        function setMoneyCharts(statistics) {
+            var chart = {
+                type: 'column'
+            };
+            var title = {
+                text: '近十日平台收入金额统计'
+            };
+            var subtitle = {
+                text: '数据来源：Yummy官方统计'
+            };
+            var xAxis = {
+                categories: [],
+                crosshair: true
+            };
+            var yAxis = {
+                min: 0,
+                title: {
+                    text: '收入金额(元)'
+                }
+            };
+            var tooltip = {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} 元</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            };
+            var plotOptions = {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            };
+            var credits = {
+                enabled: false
+            };
+
+            var series= [];
+
+            var money = [];
+            $.each(statistics, function (i) {
+                xAxis.categories.push(statistics[i].time);
+                money.push(statistics[i].money);
+            });
+            var data = {name: 'Yummy', data: money};
+            series.push(data);
+
+            var json = {};
+            json.chart = chart;
+            json.title = title;
+            json.subtitle = subtitle;
+            json.tooltip = tooltip;
+            json.xAxis = xAxis;
+            json.yAxis = yAxis;
+            json.series = series;
+            json.plotOptions = plotOptions;
+            json.credits = credits;
+            $('#money').highcharts(json);
+
+        }
+
+        function setNumCharts(statistics) {
+            var chart = {
+                type: 'column'
+            };
+            var title = {
+                text: '近十日平台处理订单数统计'
+            };
+            var subtitle = {
+                text: '数据来源：Yummy官方统计'
+            };
+            var xAxis = {
+                categories: [],
+                crosshair: true
+            };
+            var yAxis = {
+                min: 0,
+                title: {
+                    text: '订单数(份)'
+                }
+            };
+            var tooltip = {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} 份</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            };
+            var plotOptions = {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            };
+            var credits = {
+                enabled: false
+            };
+
+            var series= [];
+
+            var money = [];
+            $.each(statistics, function (i) {
+                xAxis.categories.push(statistics[i].time);
+                money.push(statistics[i].num);
+            });
+            var data = {name: 'Yummy', data: money};
+            series.push(data);
+
+            var json = {};
+            json.chart = chart;
+            json.title = title;
+            json.subtitle = subtitle;
+            json.tooltip = tooltip;
+            json.xAxis = xAxis;
+            json.yAxis = yAxis;
+            json.series = series;
+            json.plotOptions = plotOptions;
+            json.credits = credits;
+            $('#num').highcharts(json);
+        }
+    </script>
+</head>
+<body>
+<style>
+    .navbar{
+        position: relative;
+        min-height: 50px;
+        margin-bottom: 1px;
+        background-color: #2492d6;
+        border: 1px solid transparent;
+    }
+    a{
+        color: white;
+    }
+    .input-group a{
+        color: black;
+        font-size: 16px;
+    }
+</style>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li style="width: 120px;text-align: center"><a href="/manager_main">餐厅审批</a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                        数据统计
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/manager_statistics">用户统计</a></li>
+                        <li><a href="/manager_income">收入统计</a></li>
+                        <li><a href="/login">登出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="col-sm-6">
+    <label id="totalMoney" style="position: absolute;left: 35%;top: 20px;font-size: 25px">收入总额：</label>
+</div>
+<div class="col-sm-6">
+    <label id="orderNum" style="position: absolute;right: 65%;top: 20px;font-size: 25px">总订单数：</label>
+</div>
+<div class="container-fluid" style="position: absolute;top: 20%">
+    <h3 style="text-align: center;width: 100%">近十日收入统计情况</h3>
+    <div id="money" style="width: 600px;height: 400px;float: left"></div>
+    <div id="num" style="width: 600px;height: 400px;float: left"></div>
+</div>
+</body>
+</html>

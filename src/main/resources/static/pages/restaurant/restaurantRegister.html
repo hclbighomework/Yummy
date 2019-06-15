@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-select/1.13.3/js/i18n/defaults-zh_CN.js"></script>
+    <link href="../../css/restaurant/RegisterCSS.css" rel="stylesheet" type="text/css"/>
+    <meta charset="UTF-8">
+    <title>餐厅注册</title>
+    <script>
+        window.onload=function () {
+            $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/getAllAddress",
+                    data: {},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        var str = "";
+                        $.each(data.address, function (i) {
+                            str += "<option>" + data.address[i] + "</option>"
+                        });
+                        $("#address").append(str).selectpicker("refresh");
+                    }
+                }
+            );
+        }
+    </script>
+</head>
+<body>
+<img src="../../image/yummy.png">
+<div class="container" style="width: 300px; height: 580px; background-color: #dce0ff;">
+    <form role="form">
+        <h2 style="text-align: center">餐厅注册</h2>
+        <div class="form-group">
+            <label for="userName">餐厅名</label>
+            <input type="text" class="form-control" id="userName">
+        </div>
+        <div class="form-group">
+            <label for="password">密码</label>
+            <input type="password" class="form-control" id="password">
+        </div>
+        <div class="form-group">
+            <label for="rType">餐厅类型</label>
+            <select class="form-control" id="rType">
+                <option value="综合店面">综合店面</option>
+                <option value="快餐便当">快餐便当</option>
+                <option value="特色菜系">特色菜系</option>
+                <option value="异国料理">异国料理</option>
+                <option value="炸鸡汉堡">炸鸡汉堡</option>
+                <option value="甜品饮品">甜品饮品</option>
+                <option value="小吃烧烤">小吃烧烤</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="address">地址</label>
+            <select class="form-control show-tick selectpicker" data-live-search="true" id="address">
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="phone">商家电话</label>
+            <input type="text" class="form-control" id="phone">
+        </div>
+        <div class="form-group">
+            <label for="description">商家描述</label>
+            <textarea class="form-control" id="description"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" onclick="verify()">注册</button>
+        <button type="button" class="btn btn-default btn-block" onclick="history.back()">返回</button>
+
+    </form>
+</div>
+<!-- 模态框 -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    注册成功！！！
+                </h4>
+            </div>
+            <div class="modal-body" id="successMessage">
+                您的识别码是：（用于登录）
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="window.location.href='/login'">
+                    确定
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<div class="modal fade" id="noInputModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                您还有必要信息未输入！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<div class="modal fade" id="phoneErrorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                您输入的手机号不正确！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<div class="modal fade" id="nameUsedModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    注册失败
+                </h4>
+            </div>
+            <div class="modal-body">
+                该餐厅名已被注册使用！！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+
+<script>
+    function verify() {
+        var password = $("#password").val();
+        var userName = $("#userName").val();
+        var rType = $("#rType").val();
+        var address = $("#address").val();
+        var phone = $("#phone").val();
+        var description = $("#description").val();
+        console.log(address);
+        if (password == "" || userName == "" || rType == "" || address == "" || description == "") {
+            $("#noInputModal").modal("show");
+        } else if (!isPhone(phone)) {
+            $("#phoneErrorModal").modal("show");
+        } else {
+            register(userName, password, rType, address, phone, description);
+        }
+    }
+
+    function register(userName, password, rType, address, phone, description) {
+        $.ajax({
+            type: "post",
+            async: true,
+            url: "/registerForRestaurant",
+            data: {userName: userName, password: password, type: rType, address: address, phone: phone, description:description},
+            dataType: 'json',
+            success: function (data) {
+                console.log(data);
+                switch (data.message) {
+                    case 'error':
+                        $("#nameUsedModal").modal("show");
+                        break;
+                    case 'success':
+                        $("#successMessage").text("您的识别码是：" + data.id + "（登录使用）");
+                        $("#successModal").modal("show");
+                        break;
+                    default:
+                        alert("There is something wrong!");
+                }
+            }
+        })
+    }
+
+    function isPhone(phone) {
+        var reg=/^[1][3,5,7,8][0-9]{9}$/;
+        if (!reg.test(phone)) {
+            return false;
+        }
+        return true;
+    }
+</script>
+</body>
+</html>

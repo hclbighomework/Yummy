@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户统计</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script>
+        window.onload = function () {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/getUserStatistics",
+                data: {},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            setRestaurantTable(data.restaurants);
+                            setMemberTable(data.members);
+                    }
+                }
+            });
+        };
+
+        function setRestaurantTable(restaurants) {
+            var str = "";
+            $.each(restaurants, function (i) {
+                str += "<tr><td>" + restaurants[i].name + "</td><td>" + restaurants[i].type + "</td><td>" +
+                    restaurants[i].phone + "</td><td>" + restaurants[i].addressByAid.description + "</td><td>" +
+                    restaurants[i].description + "</td><td>" + (restaurants[i].state == 1 ? "正常运营" : "待审批") +
+                    "</td></tr>";
+            });
+            if (str == "") {
+                str = "<tr><td colspan='6'>暂无注册的餐厅信息</td></tr>";
+            }
+            $("#restaurantTable").html(str);
+        }
+
+        function setMemberTable(members) {
+            var str = "";
+            var stateDes = ["已注销", "待激活", "使用中"];
+            $.each(members, function (i) {
+                str += "<tr><td>" + members[i].email + "</td><td>" + members[i].name + "</td><td>" +
+                     members[i].level + "</td><td>" + members[i].phone + "</td><td>" + stateDes[members[i].state + 1] +
+                    "</td></tr>"
+            });
+            if (str == "") {
+                str = "<tr><td colspan='5'>暂无注册的用户信息</td></tr>";
+            }
+            $("#memberTable").html(str);
+        }
+
+
+    </script>
+</head>
+<body>
+<style>
+    .navbar{
+        position: relative;
+        min-height: 50px;
+        margin-bottom: 1px;
+        background-color: #2492d6;
+        border: 1px solid transparent;
+    }
+    a{
+        color: white;
+    }
+    .input-group a{
+        color: black;
+        font-size: 16px;
+    }
+</style>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li style="width: 120px;text-align: center"><a href="/manager_main">餐厅审批</a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                        数据统计
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/manager_statistics">用户统计</a></li>
+                        <li><a href="/manager_income">收入统计</a></li>
+                        <li><a href="/login">登出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="panel panel-default" id="single">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#single" href="#collapseOne">
+                餐厅信息表
+            </a>
+        </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse in">
+        <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+                <th>餐厅名</th>
+                <th>餐厅种类</th>
+                <th>联系电话</th>
+                <th>餐厅地址</th>
+                <th>餐厅描述</th>
+                <th>餐厅状态</th>
+            </tr>
+            </thead>
+            <tbody id="restaurantTable">
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="panel panel-default" id="package">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#package" href="#collapseTwo">
+                会员信息表
+            </a>
+        </h4>
+    </div>
+    <div id="collapseTwo" class="panel-collapse collapse in">
+        <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+                <th>会员邮箱</th>
+                <th>会员名</th>
+                <th>会员等级</th>
+                <th>联系方式</th>
+                <th>会员状态</th>
+            </tr>
+            </thead>
+            <tbody id="memberTable">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

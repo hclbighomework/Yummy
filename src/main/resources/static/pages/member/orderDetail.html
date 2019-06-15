@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>订单详情——Yummy!</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-select/1.13.3/js/i18n/defaults-zh_CN.js"></script>
+    <script>
+        var maxTime = 2 * 60;
+        var oid = "";
+        var address = "";
+        var balance = 0;
+        var cost = 0;
+        window.onload = function () {
+            var url = window.location.search;            
+            oid = decodeURI(url.substr(url.indexOf("=") + 1));
+            $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/getOrderInfo",
+                    data: {oid:oid},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case "error":
+                                window.location.href = "/login";
+                                break;
+                            case "success":
+                                address = data.order.address;
+                                balance = data.member.balance;
+                                cost = data.order.cost;
+                                $("#userName").html(data.member.name + "<b class='caret'></b>");
+                                $("#oid").append(data.order.oid);
+                                $("#uName").append(data.member.name);
+                                $("#level").append(data.member.level);
+                                $("#uPhone").append(data.member.phone);
+                                $("#rName").append(data.rName);
+                                $("#rPhone").append(data.rPhone);
+                                $("#orderTime").append(data.order.orderTimeString);
+                                $("#arriveTime").append(data.order.arriveTimeString);
+                                $("#state").append(data.order.state);
+                                $("#address").append(data.order.address);
+                                $("#cost").append(data.order.cost);
+                                $("#note").append(data.order.note);
+                                setSelectPicker(data.member.addressCollection);
+                                setSingleTable(data.order.singlesCollection);
+                                setPackageTable(data.order.packagesCollection);
+                                if (data.order.address == null) {
+                                    $("#payBtn").attr('disabled', true);
+                                }
+                                if (data.order.state == "支付中") {
+                                    maxTime = data.leftTime;
+                                    timer = setInterval("CountDown()", 1000);
+                                }
+                                if (data.order.state != "支付中" ) {
+                                    $("#payBtn").attr('disabled', true);
+                                    $("#addressBtn").attr('disabled', true);
+                                    $("#timer").hide();
+                                }
+                                if (data.order.state == '配送中') {
+                                    $("#confirmBtn").attr('disabled', false);
+                                }
+                                if (data.order.state == '已完成' || data.order.state == '已取消') {
+                                    $("#btnGroup").hide();
+                                }
+                        }
+                    }
+                }
+            );
+        };
+        function setSingleTable(singleList) {
+            var str = "";
+            $.each(singleList, function (i) {
+                str += "<tr><td>" + singleList[i].name + "</td><td>" + singleList[i].cost +
+                    "</td><td>" + singleList[i].orderNum + "</td>";
+            });
+            $("#singleTable").html(str);
+        }
+        function setPackageTable(packageList) {
+            var str = "";
+            $.each(packageList, function (i) {
+                str += "<tr><td>" + packageList[i].name + "</td><td>" + packageList[i].cost +
+                    "</td><td>" + packageList[i].orderNum + "</td>"
+            });
+            $("#packageTable").html(str);
+        }
+        function setSelectPicker(addressList) {
+            var str = "";
+            $.each(addressList, function (i) {
+                str += "<option>" + addressList[i].description + "</option>"
+            });
+            if (str == "") {
+                str = "没有地址可选择，请去添加你的收货地址！";
+            }
+            $("#addressSelect").append(str);
+            $("#addressSelect").selectpicker("refresh");
+        }
+        function selectAddress() {
+            var newAddress = $("#addressSelect").val();
+            if (newAddress == "没有地址可选择，请去添加你的收货地址！") {
+                $("#payBtn").attr('disabled', true);
+            } else {
+                $("#address").text("送货地址：" + newAddress);
+                $("#payBtn").attr('disabled', false);
+                $("#addressModal").modal("hide");
+                address = newAddress;
+            }
+        }
+        function openAddress() {
+            $("#addressModal").modal("show");
+        }
+        function pay() {
+            if (balance >= cost) {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/payOrder",
+                    data: {oid:oid, address:address},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case "error":
+                                window.location.href = "/login";
+                                break;
+                            case "success":
+                                clearInterval(timer);
+                                $("#payBtn").attr('disabled', true);
+                                $("#addressBtn").attr('disabled', true);
+                                $("#confirmBtn").attr('disabled', true);
+                                $("#timer").hide();
+                                $("#estimateTime").text("预计送达时间为" + data.estimateTime);
+                                $("#successModal").modal("show");
+                        }
+                    }
+                });
+            } else {
+                $("#errorModal").modal("show");
+            }
+        }
+        function recharge() {
+            var money = $("#recharge").val();
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/recharge",
+                data: {money:money},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case "error":
+                            window.location.href = "/login";
+                            break;
+                        case "success":
+                            balance = balance + data.balance;
+                            $("#errorModal").modal("hide");
+                            $("#balance").text("当前余额为" + data.balance + "元");
+                            $("#rechargeModal").modal("show");
+                    }
+                }
+            });
+        }
+        function cancelOrder() {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/cancelOrder",
+                data: {oid:oid},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case "error":
+                            window.location.href = "/login";
+                            break;
+                        case "success":
+                            clearInterval(timer);
+                            $("#timer").hide();
+                            $("#cancelBtn").attr('disabled', true);
+                            $("#addressBtn").attr('disabled', true);
+                            $("#payBtn").attr('disabled', true);
+                            $("#confirmBtn").attr('disabled', true);
+                            $("#state").text("订单状态：已取消");
+                            $("#cancelNote").text(data.note);
+                            $("#cancelModal").modal("show");
+                    }
+                }
+            });
+        }
+        function confirmOrder() {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/confirmOrder",
+                data: {oid:oid},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case "error":
+                            window.location.href = "/login";
+                            break;
+                        case "success":
+                            clearInterval(timer);
+                            $("#cancelBtn").attr('disabled', true);
+                            $("#addressBtn").attr('disabled', true);
+                            $("#payBtn").attr('disabled', true);
+                            $("#confirmBtn").attr('disabled', true);
+                            $("#state").text("订单状态：已完成");
+                            $("#arriveTime").text("送达时间：" + data.arriveTime);
+                            $("#confirmModal").modal("show");
+                    }
+                }
+            });
+        }
+        function CountDown() {
+            if (maxTime >= 0) {
+                minutes = Math.floor(maxTime / 60);
+                seconds = Math.floor(maxTime % 60);
+                msg = "剩余支付时间：" + minutes + "分" + seconds + "秒";
+                document.all["timer"].innerHTML = msg;
+                --maxTime;
+            } else{
+                cancelOrder();
+            }
+        }
+
+    </script>
+</head>
+<body>
+<style>
+    .navbar{
+        position: relative;
+        min-height: 50px;
+        margin-bottom: 1px;
+        background-color: #2492d6;
+        border: 1px solid transparent;
+    }
+    a{
+        color: white;
+    }
+    .input-group a{
+        color: black;
+        font-size: 16px;
+    }
+    .col-sm-4 {
+        position: absolute;
+        left: 10%;
+        top: 15%;
+    }
+    .col-sm-4 p{
+        font-size: 16px;
+        font-weight: normal;
+    }
+</style>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li style="width: 120px;text-align: center"><a href="/member_main">首页</a></li>
+                <li style="width: 120px;text-align: center"><a href="/member_order">我的订单</a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                        userName
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/member_profile">个人中心</a></li>
+                        <li><a href="/member_consume">消费统计</a></li>
+                        <li><a href="/login">登出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="col-sm-4">
+    <p id="oid">订单号：</p>
+    <p id="uName">会员姓名：</p>
+    <p id="level">会员等级：</p>
+    <p id="uPhone">联系电话：</p>
+    <br/>
+    <p id="rName">餐厅名：</p>
+    <p id="rPhone">商家联系方式：</p>
+    <br/>
+    <p id="orderTime">下单时间：</p>
+    <p id="arriveTime">送达时间：</p>
+    <p id="state">订单状态：</p>
+    <p id="address">配送地址：</p>
+    <p id="cost">消费总计：</p>
+    <p id="note">备注：</p>
+</div>
+<div class="col-sm-6 container-fluid" style="position: absolute;top: 150px;right: 1%;">
+    <div class="panel panel-default" id="single">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#single"
+                   href="#collapseOne">
+                    单品列表
+                </a>
+            </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse in">
+            <table class="table table-bordered table-hover table-striped" style="text-align: center">
+                <thead style="font-size: 16px">
+                <tr>
+                    <th>菜品名</th>
+                    <th>价格(/元)</th>
+                    <th>购买数量</th>
+                </tr>
+                </thead>
+                <tbody style="font-size: 16px" id="singleTable">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="panel panel-default" id="package">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#package" href="#collapseTwo">
+                    套餐列表
+                </a>
+            </h4>
+        </div>
+        <div id="collapseTwo" class="panel-collapse collapse in">
+            <table class="table table-bordered table-hover table-striped" style="text-align: center">
+                <thead style="font-size: 16px">
+                <tr>
+                    <th>菜品名</th>
+                    <th>价格(/元)</th>
+                    <th>购买数量</th>
+                </tr>
+                </thead>
+                <tbody style="font-size: 16px" id="packageTable">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--计时器-->
+<div id="timer" style="color:red;font-size: 23px;position: absolute;right: 5%;"></div>
+<div class="btn-group" style="position: fixed; right: 5px;bottom: 10px" id="btnGroup">
+    <button class="btn btn-info" id="addressBtn" style="font-size: 20px" onclick="openAddress()">修改地址</button>
+    <button class="btn btn-primary" id="payBtn" style="font-size: 20px" onclick="pay()">支付</button>
+    <button class="btn btn-danger" id="cancelBtn" style="font-size: 20px" onclick="cancelOrder()">取消订单</button>
+    <button class="btn btn-warning" id="confirmBtn" style="font-size: 20px" disabled onclick="confirmOrder()">确认收货</button>
+</div>
+<div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    选择地址
+                </h4>
+            </div>
+            <div class="modal-body">
+                <select class="form-control show-tick selectpicker" data-live-search="true" id="addressSelect">
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="selectAddress()">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    支付成功
+                </h4>
+            </div>
+            <div class="modal-body">
+                <p id="estimateTime"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    支付失败
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label for="recharge">余额不足，请充值！！</label>
+                <input type="number" class="form-control" id="recharge" min="0">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="recharge()">充值</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="rechargeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    充值成功！！
+                </h4>
+            </div>
+            <div class="modal-body">
+                <p id="balance">当前余额为</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="cancelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    取消成功
+                </h4>
+            </div>
+            <div class="modal-body">
+                <p id="cancelNote"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    收货成功
+                </h4>
+            </div>
+            <div class="modal-body">
+                已确认收货，祝您用餐愉快！！
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</body>
+</html>
