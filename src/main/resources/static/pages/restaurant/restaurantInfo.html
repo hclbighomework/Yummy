@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>餐厅资料——Yummy!</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-select/1.13.3/js/i18n/defaults-zh_CN.js"></script>
+    <script>
+        window.onload = function () {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/getResInfo",
+                data: {},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            $("#userName").html(data.restaurant.name + "<b class='caret'></b>");
+                            $("#rid").val(data.restaurant.rid);
+                            $("#rName").val(data.restaurant.name);
+                            $("#rAddress").val(data.restaurant.addressByAid.description);
+                            $("#phone").val(data.restaurant.phone);
+                            $("#description").val(data.restaurant.description);
+                            $("#minCost").val(data.restaurant.minCost);
+                            $("#humanCost").val(data.restaurant.humanCost);
+                            setAddressSelect(data.addressList);
+                            setReductionTable(data.restaurant.reductionsByRid);
+                    }
+                }
+            });
+        };
+        function setAddressSelect(addressList) {
+            var str = "";
+            $.each(addressList, function (i) {
+                str += "<option>" + addressList[i] + "</option>"
+            });
+            $("#newAddress").append(str).selectpicker("refresh");
+        }
+        function setReductionTable(reductionList) {
+            var str = "";
+            $.each(reductionList, function (i) {
+                str += "<tr><td><input type='number' min='0' class='form-control' value='" + reductionList[i].fullCost +
+                    "'></td><td><input type='number' min='0' class='form-control' value='" + reductionList[i].reduceCost +
+                    "'></td><td><button class='btn btn-danger' onclick='deleteReduction(this)'>移除</button></td></tr>";
+            });
+            if (str == "") {
+                str = "<tr><td colspan='3'>还未添加满减优惠哦！</td></tr>"
+            }
+            $("#reductionTable").html(str);
+        }
+
+        function deleteReduction(obj) {
+            $(obj).parents("tr").remove();
+        }
+        
+        function addReduction() {
+            var str = $("#reductionTable").html();
+            var appendStr = "<tr><td><input type='number' class='form-control' min='0' value='" + 0 +
+                "'></td><td><input type='number' class='form-control' min='0' value='" + 0 +
+                "'></td><td><button class='btn btn-danger' onclick='deleteReduction(this)'>移除</button></td></tr>";
+            if (str == "<tr><td colspan=\"3\">还未添加满减优惠哦！</td></tr>") {
+                $("#reductionTable").html(appendStr);
+            } else {
+                $("#reductionTable").append(appendStr);
+            }
+        }
+        
+        function saveReduction() {
+            var fullCost = [];
+            var reduceCost = [];
+            var flag = true;
+            $("#reductionTable tr").each(function () {
+                var td = $(this).find("td");
+                var full = td.eq(0).find("input").val();
+                var reduce = td.eq(1).find("input").val();
+                if (fullCost.indexOf(full) !== -1) {
+                    flag = false;
+                }
+                if (full > 0 && reduce > 0) {
+                    fullCost.push(full);
+                    reduceCost.push(reduce);
+                }
+            });
+            if (flag) {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/saveReduction",
+                    data: {fullCost:fullCost, reduceCost:reduceCost},
+                    dataType: 'json',
+                    traditional: true,
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                                window.location.href = '/login';
+                                break;
+                            case 'success':
+                                setReductionTable(data.reductionList);
+                                $("#note").text("满减优惠保存成功！！！");
+                                $("#noteModal").modal("show");
+                        }
+                    }
+                });
+            } else {
+                $("#note").text("同样的满额优惠只能出现一次！！！");
+                $("#noteModal").modal("show");
+            }
+
+        }
+        
+        function updateResInfo() {
+            var newName = $("#newName").val();
+            var newType = $("#rType").val();
+            var newAddress = $("#newAddress").val();
+            var newPhone = $("#newPhone").val();
+            var newDescription = $("#newDescription").val();
+            if (newName == "" || newType == "" || newAddress == "" || newPhone == "" || newDescription == "") {
+                $("#note").text("有必要信息未填写！！");
+                $("#noteModal").modal("show");
+            } else if (!isPhone(newPhone)) {
+                $("#note").text("请填写正确的手机号！！");
+                $("#noteModal").modal("show");
+            } else {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/updateResInfo",
+                    data: {newName:newName, newType:newType, newAddress:newAddress, newPhone:newPhone, newDescription:newDescription},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                            case 'success':
+                                window.location.href = '/login';
+                                break;
+                            case 'nameUsed':
+                                $("#note").text("该餐厅名已被占用！");
+                                $("#noteModal").modal("show");
+                        }
+                    }
+                });
+            }
+        }
+
+        function isPhone(phone) {
+            var reg=/^[1][3578][0-9]{9}$/;
+            if (!reg.test(phone)) {
+                return false;
+            }
+            return true;
+        }
+
+        function updateResPwd() {
+            var oldPassword = $("#oldPassword").val();
+            var newPassword = $("#newPassword").val();
+            var againPassword = $("#againPassword").val();
+            if (oldPassword == "" || newPassword == "" || againPassword == "") {
+                $("#note").text("有必要信息未填写！！");
+                $("#noteModal").modal("show");
+            } else if (newPassword != againPassword) {
+                $("#note").text("两次输入的新密码不同！！");
+                $("#noteModal").modal("show");
+            } else {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/updateResPwd",
+                    data: {oldPassword:oldPassword, newPassword:newPassword},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                            case 'success':
+                                window.location.href = '/login';
+                                break;
+                            case 'pwdError':
+                                $("#note").text("输入的原密码有误！！");
+                                $("#noteModal").modal("show");
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateResCost() {
+            var newMinCost = $("#newMinCost").val();
+            var newHumamCost = $("#newHumanCost").val();
+            if (newMinCost == "" || newHumamCost == "") {
+                $("#note").text("有必要信息未输入！！");
+                $("#noteModal").modal("show");
+            } else {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/updateResCost",
+                    data: {newMinCost:newMinCost, newHumanCost:newHumamCost},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                                window.location.href = '/login';
+                                break;
+                            case 'success':
+                                $("#minCost").val(newMinCost);
+                                $("#humanCost").val(newHumamCost);
+                                $("#note").text("配送费用信息修改成功！！");
+                                $("#costModal").modal("hide");
+                                $("#noteModal").modal("show");
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</head>
+<body>
+<style>
+    .navbar{
+        position: relative;
+        min-height: 50px;
+        margin-bottom: 1px;
+        background-color: #2492d6;
+        border: 1px solid transparent;
+    }
+    a{
+        color: white;
+    }
+    .input-group a{
+        color: black;
+        font-size: 16px;
+    }
+</style>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li style="width: 120px;text-align: center"><a href="/restaurant_main">订单处理</a></li>
+                <li style="width: 120px;text-align: center"><a href="/restaurant_goods">商品发布</a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                        userName
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/restaurant_profile">餐厅资料</a></li>
+                        <li><a href="/restaurant_orders">订单统计</a></li>
+                        <li><a href="/restaurant_income">收入统计</a></li>
+                        <li><a href="/login">登出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="col-sm-3" style="position: absolute;left: 10%;">
+    <h2 style="font-weight: bold">餐厅信息</h2>
+    <label for="rid">识别码</label>
+    <input class="form-control" id="rid" disabled>
+    <label for="rName">店名</label>
+    <input class="form-control" id="rName" disabled>
+    <label for="rAddress">地址</label>
+    <input class="form-control" id="rAddress" disabled>
+    <label for="phone">联系电话</label>
+    <input class="form-control" id="phone" disabled>
+    <label for="description">商家描述</label>
+    <textarea class="form-control" id="description" disabled></textarea>
+    <br/>
+    <div class="button-group">
+        <button class="btn btn-primary" style="width: 153px" onclick="modifyInfo()">修改信息</button>
+        <button class="btn btn-warning" style="width: 153px" onclick="modifyPassword()">密码管理</button>
+    </div>
+</div>
+<div class="col-sm-3" style="position: absolute;right: 15%;">
+    <h2 style="font-weight: bold">配送费用</h2>
+    <label for="minCost">起送费</label>
+    <input class="form-control" type="number" id="minCost" disabled>
+    <label for="humanCost">配送费</label>
+    <input class="form-control" type="number" id="humanCost" disabled>
+    <br/>
+    <button class="btn btn-info" style="width: 98%" onclick="modifyCost()">费用管理</button>
+</div>
+<div class="col-sm-3" style="position: absolute;right: 15%;top: 50%">
+    <h2 style="font-weight: bold">
+        满减优惠&ensp;<img src="../../image/add.png" data-toggle="tooltip" title="单击增加新满减优惠" style="width: 15px;height: 15px" onclick="addReduction()">
+        <img src="../../image/save.png" data-toggle="tooltip" title="单击保存满减优惠" style="width: 15px;height: 15px " onclick="saveReduction()">
+    </h2>
+
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th>满额</th>
+            <th>减额</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody id="reductionTable">
+        </tbody>
+    </table>
+</div>
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    基本信息修改后，待管理员审批后才能登陆！！！
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label for="newName">餐厅名</label>
+                <input class="form-control" id="newName">
+                <label for="rType">餐厅类型</label>
+                <select class="form-control" id="rType">
+                    <option value="综合店面">综合店面</option>
+                    <option value="快餐便当">快餐便当</option>
+                    <option value="特色菜系">特色菜系</option>
+                    <option value="异国料理">异国料理</option>
+                    <option value="炸鸡汉堡">炸鸡汉堡</option>
+                    <option value="甜品饮品">甜品饮品</option>
+                    <option value="小吃烧烤">小吃烧烤</option>
+                </select>
+                <label for="newAddress">商家地址</label>
+                <select class="form-control show-tick selectpicker" data-live-search="true" id="newAddress">
+                </select>
+                <label for="newPhone">联系电话</label>
+                <input class="form-control" id="newPhone">
+                <label for="newDescription">商家描述</label>
+                <textarea id="newDescription" class="form-control"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="updateResInfo()">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    密码修改
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label for="oldPassword">原密码</label>
+                <input type="password" class="form-control" id="oldPassword">
+                <label for="newPassword">新密码</label>
+                <input type="password" class="form-control" id="newPassword">
+                <label for="againPassword">再次确认</label>
+                <input type="password" class="form-control" id="againPassword">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="updateResPwd()">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="costModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    费用管理
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label for="newMinCost">起送费</label>
+                <input class="form-control" type="number" id="newMinCost">
+                <label for="newHumanCost">配送费</label>
+                <input class="form-control" type="number" id="newHumanCost">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="updateResCost()">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="noteModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title">
+                    提示
+                </h4>
+            </div>
+            <div class="modal-body">
+                <p id="note"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<script>
+    function modifyInfo() {
+        $("#infoModal").modal("show");
+    }
+    function modifyPassword() {
+        $("#passwordModal").modal("show");
+    }
+    function modifyCost() {
+        $("#costModal").modal("show"); 
+    }
+</script>
+</body>
+</html>
