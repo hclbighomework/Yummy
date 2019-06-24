@@ -21,6 +21,8 @@ public class Singles {
     private int packageNum;
     private int orderNum;
     @JsonIgnore
+    private String picPath;
+    @JsonIgnore
     private Collection<OrderSingle> orderSinglesBySid;
     @JsonIgnore
     private Restaurants restaurantsByRid;
@@ -117,6 +119,16 @@ public class Singles {
         this.discount = discount;
     }
 
+    @Basic
+    @Column(name = "pic_path")
+    public String getPicPath() {
+        return picPath;
+    }
+
+    public void setPicPath(String picPath) {
+        this.picPath = picPath;
+    }
+
     @Transient
     public int getPackageNum() {
         return packageNum;
@@ -192,4 +204,6 @@ public class Singles {
     public void setEndTimeString(String endTimeString) {
         this.endTimeString = endTimeString;
     }
+
+
 }

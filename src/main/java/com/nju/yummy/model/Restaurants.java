@@ -21,6 +21,8 @@ public class Restaurants {
     private double humanCost;
     private double totalMoney;
     @JsonIgnore
+    private String picPath;
+    @JsonIgnore
     private Collection<Orders> ordersByRid;
     //@JsonIgnore
     private Collection<Packages> packagesByRid;
@@ -158,6 +160,16 @@ public class Restaurants {
         this.totalMoney = totalMoney;
     }
 
+    @Basic
+    @Column(name = "pic_path")
+    public String getPicPath() {
+        return picPath;
+    }
+
+    public void setPicPath(String picPath) {
+        this.picPath = picPath;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -222,5 +234,6 @@ public class Restaurants {
     public void setSinglesByRid(Collection<Singles> singlesByRid) {
         this.singlesByRid = singlesByRid;
     }
+
 
 }

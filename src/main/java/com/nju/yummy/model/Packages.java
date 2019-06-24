@@ -20,6 +20,8 @@ public class Packages {
     private Double discount;
     private int orderNum;
     @JsonIgnore
+    private String picPath;
+    @JsonIgnore
     private Collection<OrderPackage> orderPackagesByPid;
     @JsonIgnore
     private Restaurants restaurantsByRid;
@@ -117,6 +119,16 @@ public class Packages {
         this.discount = discount;
     }
 
+    @Basic
+    @Column(name = "pic_path")
+    public String getPicPath() {
+        return picPath;
+    }
+
+    public void setPicPath(String picPath) {
+        this.picPath = picPath;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -194,4 +206,6 @@ public class Packages {
     public void setEndTimeString(String endTimeString) {
         this.endTimeString = endTimeString;
     }
+
+
 }
