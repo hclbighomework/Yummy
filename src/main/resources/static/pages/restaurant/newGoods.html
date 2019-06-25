@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>商品发布</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-select/1.13.3/js/i18n/defaults-zh_CN.js"></script>
+</head>
+<body>
+<style>
+    .navbar{
+        position: relative;
+        min-height: 50px;
+        margin-bottom: 1px;
+        background-color: #2492d6;
+        border: 1px solid transparent;
+    }
+    a{
+        color: white;
+    }
+    .input-group a{
+        color: black;
+        font-size: 16px;
+    }
+
+    .meal{
+        border: 5px solid white;
+        width: 283px;
+        height: 140px;
+        float: left;
+        background-color: rgba(245,245,241,0.85);
+    }
+
+    .meal-img{
+        width: 120px;
+        height: 130px;
+        border: 2px solid white;
+        float: left;
+    }
+
+    .meal-content{
+        width: 150px;
+        height: 130px;
+        float: right;
+        border: 2px solid white;
+    }
+
+
+</style>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li style="width: 120px;text-align: center"><a href="/restaurant_main">订单处理</a></li>
+                <li style="width: 120px;text-align: center"><a href="/restaurant_goods">商品发布</a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                        userName
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/restaurant_profile">餐厅资料</a></li>
+                        <li><a href="/restaurant_orders">订单统计</a></li>
+                        <li><a href="/restaurant_income">收入统计</a></li>
+                        <li><a href="/login">登出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div class="panel panel-default" id="single">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#single"
+                   href="#collapseOne">
+                    单品信息表
+                </a>
+                <a data-toggle="tooltip" title="单击发布新的单品信息" onclick="addSingle()"><img src="../../image/add.png" style="width: 15px;height: 15px" ></a>
+            </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse in">
+            <div class="meal">
+                <div class="meal-img">
+                    <img src="../../image/restaurant_icon/restaurant_default.png" style="height: 128px; width: 118px">
+                </div>
+                <div class="meal-content">
+                    <p style="font-size: 18px; margin-left: 5px; font-weight: bolder; margin-top: 2px">蛋炒饭</p>
+                    <p style="font-size: 14px; margin-left: 5px"><span style="color: red; ">￥15.00</span></p>
+                    <p style="font-size: 14px; margin-left: 5px">余20份</p>
+                    <button class="btn btn-primary" style="height: 27px; width: 70px; font-size: 12px; float: right;margin-right: 2px">编辑</button>
+                </div>
+            </div>
+            <div class="meal">
+                <div class="meal-img"></div>
+                <div class="meal-content"></div>
+            </div>
+            <div class="meal">
+                <div class="meal-img"></div>
+                <div class="meal-content"></div>
+            </div>
+            <div class="meal">
+                <div class="meal-img"></div>
+                <div class="meal-content"></div>
+            </div>
+            <div class="meal">
+                <div class="meal-img"></div>
+                <div class="meal-content"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
