@@ -4,15 +4,15 @@
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <link href="../../css/member/RegisterCSS.css" rel="stylesheet" type="text/css"/>
+    <!--<link href="../../css/member/RegisterCSS.css" rel="stylesheet" type="text/css"/>-->
     <meta charset="UTF-8">
     <title>会员注册</title>
 </head>
-<body>
-    <img src="../../image/yummy.png">
-    <div class="container" style="width: 300px; height: 450px; background-color: #dce0ff;">
+<body style="background: #dce0ff;">
+
+    <div class="container" style=" margin-top: 50px; width: 400px; height: 450px; background-color: #dce0ff;">
         <form role="form">
-            <h2 style="text-align: center">会员注册</h2>
+            <img src="../../image/yummy.png">
             <div class="form-group">
                 <label for="userID">邮箱</label>
                 <input type="email" class="form-control" id="userID">
@@ -29,7 +29,7 @@
                 <label for="phone">手机</label>
                 <input type="text" class="form-control" id="phone">
             </div>
-            <button type="button" class="btn btn-primary btn-block" onclick="verify()">注册</button>
+            <button type="button" style="background: darkkhaki; border-style: none" class="btn btn-primary btn-block" onclick="verify()">注册</button>
             <button type="button" class="btn btn-default btn-block" onclick="history.back()">返回</button>
 
         </form>
@@ -43,7 +43,7 @@
                         &times;
                     </button>
                     <h4 class="modal-title" id="myModalLabel">
-                        注册成功！！！
+                        注册成功！
                     </h4>
                 </div>
                 <div class="modal-body">
@@ -69,7 +69,7 @@
                     </h4>
                 </div>
                 <div class="modal-body">
-                    您输入的邮箱格式错误！！！
+                    您输入的邮箱格式错误！
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
@@ -89,7 +89,7 @@
                     </h4>
                 </div>
                 <div class="modal-body">
-                    您还有必要信息未输入！！！
+                    您还有必要信息未输入！
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
@@ -109,7 +109,7 @@
                     </h4>
                 </div>
                 <div class="modal-body">
-                    该邮箱已注册！！
+                    该邮箱已注册！
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
@@ -129,7 +129,7 @@
                     </h4>
                 </div>
                 <div class="modal-body">
-                    您输入的手机号不正确！！！
+                    您输入的手机号不正确！
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
