@@ -9,10 +9,9 @@
     <title>登录</title>
 </head>
 <body>
-<img src="../image/yummy.png">
 <div class="container" style="width: 300px; height: 400px; background-color: #dce0ff;">
     <form role="form">
-        <h2 style="text-align: center">登录</h2>
+        <img src="../../image/yummy.png">
         <div class="form-group">
             <label for="userID">账号</label>
             <input type="text" class="form-control" id="userID" placeholder="账号">
@@ -36,7 +35,8 @@
         <br/>
         <br/>
         <button type="button" class="btn btn-primary btn-block" onclick="valid()">登录</button>
-        <button type="button" class="btn btn-default btn-block" onclick="register()">注册</button>
+        <button type="button" class="btn btn-default btn-block" onclick="memberRegister()">注册新会员</button>
+        <button type="button" class="btn btn-default btn-block" onclick="restaurantRegister()">注册新餐厅</button>
 
     </form>
 </div>
@@ -142,15 +142,15 @@
                 console.log(data);
                 switch (data.message) {
                     case "noMember" :
-                        $("#errorMessage").text("账号或密码错误！！！");
+                        $("#errorMessage").text("账号或密码错误.");
                         $("#loginErrorModal").modal("show");
                         break;
                     case "inactive" :
-                        $("#errorMessage").text("该账户未激活，请注意邮箱中的激活邮件！！！");
+                        $("#errorMessage").text("该账户未激活，请注意邮箱中的激活邮件.");
                         $("#loginErrorModal").modal("show");
                         break;
                     case "deleted" :
-                        $("#errorMessage").text("该账户已注销！！！");
+                        $("#errorMessage").text("该账户已注销.");
                         $("#loginErrorModal").modal("show");
                         break;
                     case "success" :
