@@ -11,6 +11,261 @@
     <script src="https://cdn.bootcss.com/bootstrap-select/1.13.3/js/i18n/defaults-zh_CN.js"></script>
 
     <script>
+        window.onload=function () {
+            showSingleList();
+            $("#addPSModal").on('hidden.bs.modal', function() {
+                $('#packageModal').css({'overflow-y':'scroll'});
+            });
+        };
+
+        function showSingleList() {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/showSingleList",
+                data: {},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            $("#userName").html(data.rName + "<b class='caret'></b>");
+                            setSingleDiv(data.singleList);
+                    }
+                }
+            });
+        }
+
+        function showPackageList() {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/showPackageList",
+                data: {},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            setPackageDiv(data.packageList);
+                    }
+                }
+            });
+        }
+
+        function setSingleDiv(singleList) {
+            var singles = [];
+            var str = "";
+            if (singleList.length == 0) {
+                str = "<label>还未发布单品</label>";
+            } else {
+                $.each(singleList, function (i) {
+                    var name = singleList[i].name;
+                    if (name.length > 5) {
+                        name = name.substr(0, 5) + "...";
+                    }
+                    str += "<div class='meal'><div class='meal-img'><img src='data:image/png;base64," +
+                        singleList[i].imgData+ "' style='height: 128px;width: 118px'></div><div class='meal-content'>" +
+                        "<label>" + name + "</label><p><span style='color: red'>￥" + singleList[i].cost.toFixed(2) +
+                        "</span></p><p>余" + singleList[i].num + "元</p><button class='btn btn-primary' " +
+                        " style='height: 27px;width: 70px;font-size: 12px;float: right;margin-right: 2px' onclick='openSingleModal(" +
+                        singleList[i].sid + ")'>编辑</button></div></div>";
+                    singles.push(singleList[i].name);
+                });
+            }
+            $("#rightMeal").html(str);
+            setSingleSelect(singles);
+        }
+
+        function setPackageDiv(packageList) {
+            var str = "";
+            if (packageList.length == 0) {
+                str = "<label>还未发布单品</label>";
+            } else {
+                $.each(packageList, function (i) {
+                    var name = packageList[i].name;
+                    if (name.length > 5) {
+                        name = name.substr(0, 5) + "...";
+                    }
+                    str += "<div class='meal'><div class='meal-img'><img src='data:image/png;base64," +
+                        packageList[i].imgData+ "' style='height: 128px;width: 118px'></div><div class='meal-content'>" +
+                        "<label>" + name + "</label><p><span style='color: red'>￥" + packageList[i].cost.toFixed(2) +
+                        "</span></p><p>余" + packageList[i].num + "份</p><button class='btn btn-primary' id='" + packageList[i].id +
+                        "' style='height: 27px;width: 70px;font-size: 12px;float: right;margin-right: 2px' onclick='openPackageModal(" +
+                        packageList[i].pid + ")'>编辑</button></div></div>";
+                });
+            }
+            $("#rightMeal").html(str);
+        }
+
+        function getSingleInfo(sid) {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/getSingleInfo",
+                data: {sid:sid},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            var path = "data:image/png;base64," + data.single.imgData;
+                            $("#singleImg").attr("src", path);
+                            $("#singleName").val(data.single.name);
+                            $("#singleCost").val(data.single.cost);
+                            $("#singleType").val(data.single.type);
+                            $("#singleNum").val(data.single.num);
+                            $("#singleDiscount").val(data.single.discount);
+                            var start = data.single.startTimeString.replace(" ", "T").substr(0, 16);
+                            var end = data.single.endTimeString.replace(" ", "T").substr(0, 16);
+                            $("#startSingle").val(start);
+                            $("#endSingle").val(end);
+                    }
+                }
+            });
+        }
+
+        function getPackageInfo(pid) {
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/getPInfo",
+                data: {pid:pid},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            var path = "data:image/png;base64," + data.packages.imgData;
+                            $("#packageImg").attr("src", path);
+                            $("#packageName").val(data.packages.name);
+                            $("#packageCost").val(data.packages.cost);
+                            $("#packageType").val(data.packages.type);
+                            $("#packageNum").val(data.packages.num);
+                            $("#packageDiscount").val(data.packages.discount);
+                            var start = data.packages.startTimeString.replace(" ", "T").substr(0, 16);
+                            var end = data.packages.endTimeString.replace(" ", "T").substr(0, 16);
+                            $("#startPackage").val(start);
+                            $("#endPackage").val(end);
+                            setPackageSingleTable(data.singles);
+                    }
+                }
+            });
+        }
+
+        function updateSingle() {
+            var imgData = $("#singleImg").attr("src");
+            imgData = imgData.substr(imgData.indexOf(",") + 1);
+            var singleName = $("#singleName").val();
+            var singleCost = $("#singleCost").val();
+            var singleNum = $("#singleNum").val();
+            var singleType = $("#singleType").val();
+            var singleDiscount = $("#singleDiscount").val();
+            var startTime = $("#startSingle").val();
+            var endTime = $("#endSingle").val();
+            if (singleName == "" || singleCost == "" || singleNum == "" || singleType == "" || singleDiscount == "" ||
+                startTime == "" || endTime == "") {
+                $("#errorMessage").text("单品信息不完整！！");
+                $("#errorModal").modal("show");
+            } else if (!dateError(startTime, endTime)) {
+                $("#errorMessage").text("单品发售时间应是未来一段时间，且开始时间早于结束时间！！");
+                $("#errorModal").modal("show");
+            } else {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/updateSingle",
+                    data: {singleName:singleName, singleCost:singleCost, singleNum:singleNum, singleType:singleType,
+                        singleDiscount:singleDiscount, startTime:startTime, endTime:endTime, imgData:imgData},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                                window.location.href = '/login';
+                                break;
+                            case 'single':
+                                $("#errorMessage").text("已存在同名餐点！！！");
+                                $("#errorModal").modal("show");
+                                break;
+                            case 'success':
+                                $("#errorMessage").text("单品信息修改成功！！！");
+                                $("#singleModal").modal("hide");
+                                $("#errorModal").modal("show");
+                                showSingle();
+                        }
+
+                    }
+                });
+            }
+
+
+        }
+
+        function updatePackage() {
+            var packageName = $("#packageName").val();
+            var packageCost = $("#packageCost").val();
+            var packageNum = $("#packageNum").val();
+            var packageType = $("#packageType").val();
+            var packageDiscount = $("#packageDiscount").val();
+            var startTime = $("#startPackage").val();
+            var endTime = $("#endPackage").val();
+            var singleName = [];
+            var singleNum = [];
+            $("#packageSingleTable tr").each(function () {
+                var td = $(this).find("td");
+                var sName = td.eq(0).html();
+                var sNum = td.eq(1).find("input").val();
+                if (sNum > 0) {
+                    singleName.push(sName);
+                    singleNum.push(sNum);
+                }
+            });
+            if (packageName == "" || packageCost == "" || packageNum == "" || packageType == "" || packageDiscount == ""
+                || startTime == "" || endTime == "" || singleName.length == 0) {
+                $("#errorMessage").text("套餐信息不完整或未添加单品！！");
+                $("#errorModal").modal("show");
+            } else if (!dateError(startTime, endTime)) {
+                $("#errorMessage").text("套餐发售时间应是未来一段时间，且开始时间早于结束时间！！");
+                $("#errorModal").modal("show");
+            } else {
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/updatePackage",
+                    data: {singleName:singleName, singleNum:singleNum, packageName:packageName, packageCost:packageCost, packageNum:packageNum, packageType:packageType,
+                        packageDiscount:packageDiscount, startTime:startTime, endTime:endTime},
+                    dataType: 'json',
+                    traditional:true,
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                                window.location.href = '/login';
+                                break;
+                            case 'success':
+                                $("#errorMessage").text("套餐信息修改成功！！！");
+                                $("#packageModal").modal("hide");
+                                $("#errorModal").modal("show");
+                                setPackageTable(data.packages);
+                        }
+                    }
+                });
+            }
+        }
+
         function init() {
             $("#single").removeClass("chosen");
             $("#package").removeClass("chosen");
@@ -19,15 +274,15 @@
             $("#addS").hide();
             $("#rightMeal").hide();
         }
-
         function showSingle() {
             init();
+            showSingleList();
             $("#single").addClass("chosen");
             $("#rightMeal").show();
         }
-
         function showPackage() {
             init();
+            showPackageList();
             $("#package").addClass("chosen");
             $("#rightMeal").show();
         }
@@ -43,11 +298,100 @@
             $("#addS").show();
             $("#newTable").show();
         }
-
-        function openSingleModal(divID) {
-            $("#singleName").val(divID);
+        function openSingleModal(sid) {
+            getSingleInfo(sid);
             $("#singleModal").modal("show");
+        }
+        function openPackageModal(pid) {
+            getPackageInfo(pid);
+            $("#packageModal").modal("show");
+        }
 
+        function uploadImg(obj) {
+            var file = obj.files[0];
+
+            console.log(obj.id);
+
+            var reader = new FileReader();
+
+            //读取文件过程方法
+            reader.onloadstart = function (e) {
+                console.log("开始读取....");
+            };
+            reader.onprogress = function (e) {
+                console.log("正在读取中....");
+            };
+            reader.onabort = function (e) {
+                console.log("中断读取....");
+            };
+            reader.onerror = function (e) {
+                console.log("读取异常....");
+            };
+            reader.onload = function (e) {
+                console.log("成功读取....");
+                switch (obj.id) {
+                    case 'nFile':
+                        $("#newImg").attr('src', e.target.result);
+                        break;
+                    case 'sFile':
+                        $("#singleImg").attr('src', e.target.result);
+                        break;
+                    case 'pFile':
+                        $("#packageImg").attr('src', e.target.result);
+                }
+            };
+
+            reader.readAsDataURL(file)
+        }
+
+        function dateError(start, end) {
+            var now = new Date();
+            var startTime = new Date(Date.parse(start));
+            var endTime = new Date(Date.parse(end));
+            return now <= startTime && startTime <endTime;
+        }
+
+        function addPackageSingle() {
+            $("#addPSModal").modal("show");
+        }
+
+        function setSingleSelect(singles) {
+            var str = "";
+            if (singles.length == 0) {
+                str = "<option disabled>无单品可供选择！</option>"
+            } else {
+                $.each(singles, function (i) {
+                    str += "<option>" + singles[i] + "</option>"
+                });
+            }
+            $("#singleSelect").append(str).selectpicker("refresh");
+        }
+
+        function setPackageSingleTable(singles) {
+            var str = "";
+            $.each(singles, function (i) {
+                str += "<tr><td>" + singles[i].name + "</td><td><input type='number' min='0' class='form-control' value='" +
+                    singles[i].packageNum + "'></td><td><button class='btn btn-danger' onclick='deletePackageSingle(this)'>移除</button></td></tr>"
+            });
+            $("#packageSingleTable").html(str);
+        }
+
+        function deletePackageSingle(obj) {
+            $(obj).parents("tr").remove();
+        }
+
+        function addPS() {
+            var name = $("#singleSelect").val();
+            var num = $("#sNum").val();
+            if (name == "" || num == "") {
+                $("#errorMessage").text("您还有为填写的必要信息！！");
+                $("#errorModal").modal("show");
+            } else {
+                var str = "<tr><td>" + name + "</td><td><input type='number' class='form-control' min='0' value='" +
+                    num + "'></td><td><button class='btn btn-danger' onclick='deletePackageSingle(this)'>移除</button></td></tr>";
+                $("#packageSingleTable").append(str);
+            }
+            $("#addPSModal").modal("hide");
         }
     </script>
 </head>
@@ -88,6 +432,18 @@
         height: 130px;
         float: right;
         border: 2px solid white;
+    }
+
+    .meal-content label{
+        font-size: 18px;
+        margin-left: 5px;
+        margin-top: 2px;
+        font-weight: bolder;
+    }
+
+    .meal-content p{
+        font-size: 14px;
+        margin-left: 5px;
     }
 
     .nav_vertical {
@@ -209,43 +565,16 @@
     </ul>
 </div>
 <div class="right_content" id="rightMeal">
-    <div class="meal">
-        <div class="meal-img">
-            <img src="../../image/restaurant_icon/restaurant_default.png" style="height: 128px; width: 118px">
-        </div>
-        <div class="meal-content" id="mealContent">
-            <p style="font-size: 18px; margin-left: 5px; font-weight: bolder; margin-top: 2px">蛋炒饭</p>
-            <p style="font-size: 14px; margin-left: 5px"><span style="color: red; ">￥15.00</span></p>
-            <p style="font-size: 14px; margin-left: 5px">余20份</p>
-            <button class="btn btn-primary" style="height: 27px; width: 70px; font-size: 12px; float: right;margin-right: 2px" onclick="openSingleModal('mealContent')">编辑</button>
-        </div>
-    </div>
-    <div class="meal">
-        <div class="meal-img"></div>
-        <div class="meal-content"></div>
-    </div>
-    <div class="meal">
-        <div class="meal-img"></div>
-        <div class="meal-content"></div>
-    </div>
-    <div class="meal">
-        <div class="meal-img"></div>
-        <div class="meal-content"></div>
-    </div>
-    <div class="meal">
-        <div class="meal-img"></div>
-        <div class="meal-content"></div>
-    </div>
 </div>
 
 <div class="right_content" id="addS" style="display: none">
     <div class="new_left">
         <div class="new_img">
-            <img src="../../image/single_icon/single_default.png" style="width: 350px;height: 350px;float: left" />
+            <img src="../../image/single_icon/single_default.png" style="width: 350px;height: 350px;float: left" id="newImg"/>
             <div style="position: relative; top:280px; left:10px" class="btn-group-vertical">
                 <button class="btn btn-default">使用默认图片</button>
-                <label class="ui_button" for="xFile">上传餐点图片</label>
-                <input type="file" id="xFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*">
+                <label class="ui_button" for="nFile">上传餐点图片</label>
+                <input type="file" id="nFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*" onchange="uploadImg(this)">
             </div>
         </div>
         <div class="new_table" id="newTable">
@@ -298,11 +627,11 @@
             </div>
             <div class="modal-body">
                 <div style="width: 100%;height: 150px">
-                    <img src="../../image/single_icon/single_default.png" style="width: 150px;height: 150px;float: left" />
+                    <img src="../../image/single_icon/single_default.png" style="width: 150px;height: 150px;float: left" id="singleImg" />
                     <div class="btn-group-vertical" style="position: relative; top:70px; left:10px">
                         <button class="btn btn-default">使用默认图片</button>
                         <label class="ui_button" for="sFile">上传餐点图片</label>
-                        <input type="file" id="sFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*">
+                        <input type="file" id="sFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*" onchange="uploadImg(this)">
                     </div>
                 </div>
                 <div>
@@ -324,7 +653,7 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="singleModifyBtn">修改</button>
+                <button type="button" class="btn btn-primary" onclick="updateSingle()">修改</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>
         </div><!-- /.modal-content -->
@@ -343,16 +672,16 @@
             </div>
             <div class="modal-body">
                 <div style="width: 100%;height: 150px">
-                    <img src="../../image/single_icon/single_default.png" style="width: 150px;height: 150px;float: left" />
+                    <img src="../../image/single_icon/single_default.png" style="width: 150px;height: 150px;float: left" id="packageImg" />
                     <div class="btn-group-vertical" style="position: relative; top:70px; left:10px">
                         <button class="btn btn-default">使用默认图片</button>
-                        <label class="ui_button" for="nFile">上传餐点图片</label>
-                        <input type="file" id="nFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*">
+                        <label class="ui_button" for="pFile">上传餐点图片</label>
+                        <input type="file" id="pFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*" onchange="uploadImg(this)">
                     </div>
                 </div>
                 <div>
                     <label for="packageName">套餐名</label>
-                    <input class="form-control" id="packageName" disabled>
+                    <input class="form-control" id="packageName">
                     <label for="packageCost">套餐价格</label>
                     <input class="form-control" id="packageCost" type="number" min="0">
                     <label for="packageNum">套餐数量</label>
@@ -376,13 +705,12 @@
                         </thead>
                         <tbody id="packageSingleTable">
                         </tbody>
-
                     </table>
                 </div>
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="packageModifyBtn">修改</button>
+                <button type="button" class="btn btn-primary" onclick="updatePackage()">修改</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>
         </div><!-- /.modal-content -->

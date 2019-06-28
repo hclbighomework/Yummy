@@ -25,6 +25,7 @@ public class ImageUtil {
             ImageIO.write(bi, "png", byteArrayOutputStream);
             byte[] bytes = byteArrayOutputStream.toByteArray();
             imgStr = encoder.encodeBuffer(bytes).trim();
+            byteArrayOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -35,28 +36,19 @@ public class ImageUtil {
      *
      * @param imgStr base64
      * @param path 图片存储路径
-     * @return 将base64转为图片并保存，成功返回true，失败返回false
      */
-    public static boolean base64ToImage(String imgStr, String path) {
+    public static void base64ToImage(String imgStr, String path) {
         if (imgStr == null) {
-            return false;
+            return;
         }
         BASE64Decoder decoder = new BASE64Decoder();
         try {
-            byte[] b = decoder.decodeBuffer(imgStr);
-            for (int i = 0; i < b.length; i++) {
-                if (b[i] < 0) {
-                    b[i] += 256;
-                }
-            }
-            OutputStream out = new FileOutputStream(path);
-            out.write(b);
-            out.flush();
-            out.close();
-            return true;
+            FileOutputStream write = new FileOutputStream(path);
+            byte[] decoderBytes = decoder.decodeBuffer(imgStr);
+            write.write(decoderBytes);
+            write.close();
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
     }
 }

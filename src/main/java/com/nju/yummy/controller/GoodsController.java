@@ -9,6 +9,7 @@ import com.nju.yummy.service.PackageSingleService;
 import com.nju.yummy.service.RestaurantService;
 import com.nju.yummy.service.SingleService;
 import com.nju.yummy.util.DateUtil;
+import com.nju.yummy.util.ImageUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -30,9 +31,9 @@ public class GoodsController {
     @Resource
     private PackageSingleService packageSingleService;
 
-    @RequestMapping(value = "/getGoods", method = RequestMethod.POST)
+    @RequestMapping(value = "/showSingleList", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> getGoodsForRestaurant(HttpServletRequest request) {
+    public Map<String, Object> showSingleList(HttpServletRequest request) {
         Map<String, Object> res = new HashMap<>();
         HttpSession session = request.getSession(false);
         if (session == null || !session.getAttribute("type").equals("restaurant")) {
@@ -45,26 +46,21 @@ public class GoodsController {
             res.put("message", "success");
             res.put("rName", restaurant.getName());
             Collection<Singles> singlesCollection = restaurant.getSinglesByRid();
-            Collection<Packages> packagesCollection = restaurant.getPackagesByRid();
             for (Singles singles : singlesCollection) {
                 singles.setStartTimeString(DateUtil.timestampToString(singles.getStartTime()));
                 singles.setEndTimeString(DateUtil.timestampToString(singles.getEndTime()));
-            }
-            for (Packages packages : packagesCollection) {
-                packages.setStartTimeString(DateUtil.timestampToString(packages.getStartTime()));
-                packages.setEndTimeString(DateUtil.timestampToString(packages.getEndTime()));
+                singles.setImgData(ImageUtil.imageToBase64(singles.getPicPath()));
             }
             res.put("singleList", restaurant.getSinglesByRid());
-            res.put("packageList", restaurant.getPackagesByRid());
         } else {
             res.put("message", "error");
         }
         return res;
     }
 
-    @RequestMapping(value = "/getPackageSingle", method = RequestMethod.POST)
+    @RequestMapping(value = "/showPackageList", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> getPackageInfo(@RequestParam Map<String, Object> map, HttpServletRequest request) {
+    public Map<String, Object> showPackageList(HttpServletRequest request) {
         Map<String, Object> res = new HashMap<>();
         HttpSession session = request.getSession(false);
         if (session == null || !session.getAttribute("type").equals("restaurant")) {
@@ -74,15 +70,71 @@ public class GoodsController {
         String rid = session.getAttribute("id").toString();
         Restaurants restaurant = restaurantService.getRestaurantById(rid);
         if (restaurant != null) {
-            String pName = map.get("packageName").toString();
-            Packages packages = packageService.getPackageByNameAndRid(pName, rid);
+            res.put("message", "success");
+            res.put("rName", restaurant.getName());
+            Collection<Packages> packagesCollection = restaurant.getPackagesByRid();
+            for (Packages packages : packagesCollection) {
+                packages.setStartTimeString(DateUtil.timestampToString(packages.getStartTime()));
+                packages.setEndTimeString(DateUtil.timestampToString(packages.getEndTime()));
+                packages.setImgData(ImageUtil.imageToBase64(packages.getPicPath()));
+            }
+            res.put("packageList", restaurant.getPackagesByRid());
+        } else {
+            res.put("message", "error");
+        }
+        return res;
+    }
+
+    @RequestMapping(value = "/getSingleInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> getSingleInfo(@RequestParam Map<String, Object> map, HttpServletRequest request) {
+        Map<String, Object> res = new HashMap<>();
+        HttpSession session = request.getSession(false);
+        if (session == null || !session.getAttribute("type").equals("restaurant")) {
+            res.put("message", "error");
+            return res;
+        }
+        int sid = Integer.parseInt(map.get("sid").toString());
+        Singles singles = singleService.getSingleBySid(sid);
+        String rid = session.getAttribute("id").toString();
+        if (singles == null || !singles.getRid().equals(rid)) {
+            res.put("message", "error");
+        } else {
+            singles.setImgData(ImageUtil.imageToBase64(singles.getPicPath()));
+            singles.setStartTimeString(DateUtil.timestampToString(singles.getStartTime()));
+            singles.setEndTimeString(DateUtil.timestampToString(singles.getEndTime()));
+            res.put("single", singles);
+            res.put("message", "success");
+            session.setAttribute("sid", sid);
+        }
+        return res;
+    }
+
+    @RequestMapping(value = "/getPInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> getPackageInfo(@RequestParam Map<String, Object> map, HttpServletRequest request) {
+        Map<String, Object> res = new HashMap<>();
+        HttpSession session = request.getSession(false);
+        if (session == null || !session.getAttribute("type").equals("restaurant")) {
+            res.put("message", "error");
+            return res;
+        }
+        String rid = session.getAttribute("id").toString();
+        int pid = Integer.parseInt(map.get("pid").toString());
+        Packages packages = packageService.getPackageByID(pid);
+        if (packages == null || !packages.getRid().equals(rid)) {
+            res.put("message", "error");
+        } else {
+            packages.setImgData(ImageUtil.imageToBase64(packages.getPicPath()));
+            packages.setStartTimeString(DateUtil.timestampToString(packages.getStartTime()));
+            packages.setEndTimeString(DateUtil.timestampToString(packages.getEndTime()));
             for (Singles singles : packages.getSinglesCollection()) {
                 singles.setPackageNum(packageSingleService.getPackageSingle(packages.getPid(), singles.getSid()).getNum());
             }
+            session.setAttribute("pid", pid);
             res.put("message", "success");
             res.put("singles", packages.getSinglesCollection());
-        } else {
-            res.put("message", "error");
+            res.put("packages", packages);
         }
         return res;
     }
@@ -133,31 +185,36 @@ public class GoodsController {
     public Map<String, Object> updateSingle(@RequestParam Map<String, Object> map, HttpServletRequest request) {
         Map<String, Object> res = new HashMap<>();
         HttpSession session = request.getSession(false);
-        if (session == null || !session.getAttribute("type").equals("restaurant")) {
+        if (session == null || !session.getAttribute("type").equals("restaurant") || session.getAttribute("sid") == null) {
             res.put("message", "error");
             return res;
         }
         String rid = session.getAttribute("id").toString();
-        Restaurants restaurant = restaurantService.getRestaurantById(rid);
-        if (restaurant != null) {
-            String name = map.get("singleName").toString();
-            Singles single = singleService.getSingleByNameAndRid(name, rid);
-            single.setCost(Double.parseDouble(map.get("singleCost").toString()));
-            single.setNum(Integer.parseInt(map.get("singleNum").toString()));
-            single.setType(map.get("singleType").toString());
-            single.setDiscount(Double.valueOf(map.get("singleDiscount").toString()));
-            single.setStartTime(DateUtil.stringToTimestamp(map.get("startTime").toString()));
-            single.setEndTime(DateUtil.stringToTimestamp(map.get("endTime").toString()));
-            singleService.updateSingle(single);
-            Collection<Singles> singlesCollection = restaurantService.getRestaurantById(rid).getSinglesByRid();
-            for (Singles singles : singlesCollection) {
-                singles.setStartTimeString(DateUtil.timestampToString(singles.getStartTime()));
-                singles.setEndTimeString(DateUtil.timestampToString(singles.getEndTime()));
-            }
-            res.put("message", "success");
-            res.put("singleList", singlesCollection);
-        } else {
+        int sid = Integer.parseInt(session.getAttribute("sid").toString());
+        Singles singles = singleService.getSingleBySid(sid);
+        if (singles == null || !singles.getRid().equals(rid)) {
             res.put("message", "error");
+        } else {
+            String name = map.get("singleName").toString();
+            Singles s = singleService.getSingleByNameAndRid(name, rid);
+            if (s != null && s.getSid() != sid) {
+                res.put("message", "single");
+            } else {
+                res.put("message", "success");
+                String path = "src/main/resources/static/image/single_icon/single_" + sid + ".png";
+                String imgData = map.get("imgData").toString();
+                //System.out.println(imgData);
+                ImageUtil.base64ToImage(imgData, path);
+                singles.setName(name);
+                singles.setPicPath(path);
+                singles.setCost(Double.parseDouble(map.get("singleCost").toString()));
+                singles.setNum(Integer.parseInt(map.get("singleNum").toString()));
+                singles.setType(map.get("singleType").toString());
+                singles.setDiscount(Double.valueOf(map.get("singleDiscount").toString()));
+                singles.setStartTime(DateUtil.stringToTimestamp(map.get("startTime").toString()));
+                singles.setEndTime(DateUtil.stringToTimestamp(map.get("endTime").toString()));
+                singleService.addSingle(singles);
+            }
         }
         return res;
     }
@@ -224,49 +281,53 @@ public class GoodsController {
                                           int packageDiscount, String startTime, String endTime, HttpServletRequest request) {
         Map<String, Object> res = new HashMap<>();
         HttpSession session = request.getSession(false);
-        if (session == null || !session.getAttribute("type").equals("restaurant")) {
+        if (session == null || !session.getAttribute("type").equals("restaurant") || session.getAttribute("pid") == null) {
             res.put("message", "error");
             return res;
         }
         String rid = session.getAttribute("id").toString();
-        Restaurants restaurant = restaurantService.getRestaurantById(rid);
-        if (restaurant != null) {
-            res.put("message", "success");
-            Packages packages = packageService.getPackageByNameAndRid(packageName, rid);
-            packages.setNum(packageNum);
-            packages.setCost(packageCost);
-            packages.setType(packageType);
-            packages.setDiscount((double) packageDiscount);
-            packages.setStartTime(DateUtil.stringToTimestamp(startTime));
-            packages.setEndTime(DateUtil.stringToTimestamp(endTime));
-            packageService.updatePackage(packages);
-            for (Singles singles : packages.getSinglesCollection()) {
-                packageSingleService.deletePackageSingle(packages.getPid(), singles.getSid());
-            }
-            int pid = packageService.getPackageByNameAndRid(packageName, rid).getPid();
-            Map<String, Integer> singleMap = new HashMap<>();
-            for (int i = 0; i < singleName.length; i++) {
-                if (!singleMap.containsKey(singleName[i])) {
-                    singleMap.put(singleName[i], singleNum[i]);
-                } else {
-                    singleMap.put(singleName[i], singleMap.get(singleName[i]) + singleNum[i]);
-                }
-            }
-            for (String s : singleMap.keySet()) {
-                PackageSingle packageSingle = new PackageSingle();
-                packageSingle.setNum(singleMap.get(s));
-                packageSingle.setPid(pid);
-                packageSingle.setSid(singleService.getSingleByNameAndRid(s, rid).getSid());
-                packageSingleService.addPackageSingle(packageSingle);
-            }
-            Collection<Packages> packagesCollection = restaurantService.getRestaurantById(rid).getPackagesByRid();
-            for (Packages p : packagesCollection) {
-                p.setStartTimeString(DateUtil.timestampToString(p.getStartTime()));
-                p.setEndTimeString(DateUtil.timestampToString(p.getEndTime()));
-            }
-            res.put("packages", packagesCollection);
-        } else {
+        int pid = Integer.parseInt(session.getAttribute("pid").toString());
+        Packages packages = packageService.getPackageByID(pid);
+        if (packages == null || !packages.getRid().equals(rid)) {
             res.put("message", "error");
+        } else {
+            Packages p = packageService.getPackageByNameAndRid(packageName, rid);
+            if (p != null && p.getPid() != pid) {
+                res.put("message", "package");
+            } else {
+                res.put("message", "success");
+                packages.setNum(packageNum);
+                packages.setCost(packageCost);
+                packages.setType(packageType);
+                packages.setDiscount((double) packageDiscount);
+                packages.setStartTime(DateUtil.stringToTimestamp(startTime));
+                packages.setEndTime(DateUtil.stringToTimestamp(endTime));
+                packageService.updatePackage(packages);
+                for (Singles singles : packages.getSinglesCollection()) {
+                    packageSingleService.deletePackageSingle(packages.getPid(), singles.getSid());
+                }
+                Map<String, Integer> singleMap = new HashMap<>();
+                for (int i = 0; i < singleName.length; i++) {
+                    if (!singleMap.containsKey(singleName[i])) {
+                        singleMap.put(singleName[i], singleNum[i]);
+                    } else {
+                        singleMap.put(singleName[i], singleMap.get(singleName[i]) + singleNum[i]);
+                    }
+                }
+                for (String s : singleMap.keySet()) {
+                    PackageSingle packageSingle = new PackageSingle();
+                    packageSingle.setNum(singleMap.get(s));
+                    packageSingle.setPid(pid);
+                    packageSingle.setSid(singleService.getSingleByNameAndRid(s, rid).getSid());
+                    packageSingleService.addPackageSingle(packageSingle);
+                }
+                Collection<Packages> packagesCollection = restaurantService.getRestaurantById(rid).getPackagesByRid();
+                for (Packages pack : packagesCollection) {
+                    pack.setStartTimeString(DateUtil.timestampToString(pack.getStartTime()));
+                    pack.setEndTimeString(DateUtil.timestampToString(pack.getEndTime()));
+                }
+                res.put("packages", packagesCollection);
+            }
         }
         return res;
     }

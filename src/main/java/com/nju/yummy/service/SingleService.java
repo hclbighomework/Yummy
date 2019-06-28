@@ -10,6 +10,8 @@ public interface SingleService {
 
     public void updateSingle(Singles singles);
 
+    public Singles getSingleBySid(int sid);
+
     public ArrayList<Singles> getSinglesByNameKey(String name);
 
     public Singles getSingleByNameAndRid(String name, String rid);

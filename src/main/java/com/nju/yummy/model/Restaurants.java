@@ -31,6 +31,7 @@ public class Restaurants {
     private Address addressByAid;
     //@JsonIgnore
     private Collection<Singles> singlesByRid;
+    private String imgData;
 
     public Restaurants() {
 
@@ -235,5 +236,12 @@ public class Restaurants {
         this.singlesByRid = singlesByRid;
     }
 
+    @Transient
+    public String getImgData() {
+        return imgData;
+    }
 
+    public void setImgData(String imgData) {
+        this.imgData = imgData;
+    }
 }
