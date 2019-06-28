@@ -118,6 +118,220 @@
         color: black;
         font-size: 16px;
     }
+
+    .allRes{
+        margin-top: 20px;
+        margin-left: 100px;
+        width: 1400px;
+        float: left;
+        height: auto;
+    }
+
+    .restaurant{
+        margin-left:15px ;
+        margin-top: 10px ;
+        width: 46%;
+        height:180px;
+        float: left;
+        border:1px solid peachpuff;
+
+    }
+
+    .imgAndId{
+        width: 35%;
+        float: left;
+        height: 100%;
+
+    }
+    .info{
+        width: 65%;
+        float: left;
+        height: 100%;
+
+    }
+
+
+    .resImage{
+        position: relative;
+        top:10px;
+        left: 20px;
+        width: 160px;
+        height:160px;
+        border-radius: 12px;
+    }
+
+    .resName{
+        position: relative;
+        top:10px;
+        left: 0px;
+        font-size: 24px;
+        font-weight: bold;
+        letter-spacing:10px;
+
+        width: 80%;
+    }
+
+    .resType{
+        position: relative;
+        top:5px;
+        left: 0px;
+        font-size: 16px;
+        width: 90%;
+        font-weight: bold;
+    }
+
+    .resDiscount{
+        position: relative;
+        top:15px;
+        left: 0px;
+        font-size: 14px;
+        width:30% ;
+    }
+
+
+
+    .resAddress{
+        position: relative;
+        top:15px;
+        left: 0px;
+        width: 90%;
+        font-size: 14px;
+    }
+
+    .resCost{
+        position: relative;
+        top:15px;
+        left: 0px;
+        width: 45%;
+        font-size: 14px;
+    }
+
+    .resSales{
+        position: relative;
+        top:5px;
+        left: 0px;
+        width: 90%;
+        font-size: 14px;
+        color: #807e73;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #c4b3b3;
+    }
+
+    .noticeT{
+        position: absolute;
+        left:1030px;
+        width: 250px;
+        height: 30px;
+        background-color: #40b7ff;
+        text-align:center;
+        border-radius: 2px;
+    }
+
+    .notice{
+        position: absolute;
+        top:255px;
+        left:1030px;
+        width: 250px;
+        height: 250px;
+        border: #c4b3b3 1px solid;
+        padding: 10px 10px 10px 10px;
+    }
+
+
+
+    .food{
+        width: 390px;
+        height: 100px;
+        border: #c4b3b3 1px solid;
+        float: left;
+        margin:0px 20px 20px 0;
+    }
+
+    .orderPane{
+        width: 820px;
+        float: left;
+        position: absolute;
+        left: 200px;
+        top:225px;
+
+        height:auto;
+        overflow:hidden
+    }
+
+    .orderPane1{
+        width: 820px;
+        float: left;
+        position: absolute;
+        left: 200px;
+        top:900px;
+
+        height:auto;
+        overflow:hidden
+    }
+
+
+
+    .orderedFood{
+        width: 100%;
+        border-bottom: #c4b3b3 1px solid  ;
+        height: 30px;
+        float: left;
+    }
+
+    .price{
+        background-color: #3e4c4b;
+        width: 66.67%;
+        height: 40px;
+        margin-top: 5px;
+    }
+
+    .singleName{
+        margin-top: 5px;
+        margin-left: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        width: 40%;
+        height: 35px;
+    }
+
+    .singlePrice{
+        margin-top: 5px;
+        margin-left: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        width: 40%;
+        height: 35px;
+    }
+
+    .singleNum{
+        margin-top: 5px;
+        margin-left: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        width: 40%;
+        height: 35px;
+    }
+
+    .singleButton{
+        margin-top: 5px;
+        margin-left: 10px;
+        width: 40%;
+        height: 35px;
+    }
+
+    .shoppingName{
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 10px;
+        width: 60%;
+    }
+
+    .shoppingPrice{
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 5px;
+        width: 30%;
+    }
 </style>
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
     <div class="container-fluid">
@@ -148,6 +362,7 @@
     </div>
 </nav>
 <br/>
+<div class="container-fluid"  style="width: 1380px;">
 <div class="col-sm-4" id="search" style="float: right">
     <div class="input-group">
         <input type="text" class="form-control" id="searchKey" placeholder="搜索商家或美食..." onkeydown="onKeyDown(event)"/>
@@ -176,63 +391,46 @@
         <button type="button" class="btn btn-default" onclick="resType(this.innerText)">小吃烧烤</button>
     </div>
 
+    </div>
 </div>
 
-<div class="container-fluid" id="search_res">
-    <table class="table table-bordered table-hover">
-        <tr><th colspan="3" style="font-size: 16px" data-toggle="tooltip" title="单击进入店铺页面">restaurantName</th></tr>
-        <tr>
-            <td>meanName</td>
-            <td>meanPrice</td>
-            <td>meanNum</td>
-        </tr>
-        <tr>
-            <td>meanName</td>
-            <td>meanPrice</td>
-            <td>meanNum</td>
-        </tr>
-        <tr>
-            <td>meanName</td>
-            <td>meanPrice</td>
-            <td>meanNum</td>
-        </tr>
-    </table>
-    <table class="table table-bordered table-hover">
-        <tr><th colspan="3" style="font-size: 16px">restaurantName</th></tr>
-        <tr>
-            <td>meanName</td>
-            <td>meanPrice</td>
-            <td>meanNum</td>
-        </tr>
-        <tr>
-            <td>meanName</td>
-            <td>meanPrice</td>
-            <td>meanNum</td>
-        </tr>
-        <tr>
-            <td>meanName</td>
-            <td>meanPrice</td>
-            <td>meanNum</td>
-        </tr>
-    </table>
-    <table class="table table-bordered table-hover">
-        <tr><th colspan="3" style="font-size: 16px">restaurantName</th></tr>
-        <tr>
-            <td>meanName</td>
-            <td>meanPrice</td>
-            <td>meanNum</td>
-        </tr>
-        <tr>
-            <td>meanName</td>
-            <td>meanPrice</td>
-            <td>meanNum</td>
-        </tr>
-        <tr>
-            <td>meanName</td>
-            <td>meanPrice</td>
-            <td>meanNum</td>
-        </tr>
-    </table>
+<div class="allRes" id="search_res" >
+    <div class="restaurant">
+        <div class="imgAndId">
+            <img src="../../image/restaurant_icon/Mcc.jpg" class="resImage">
+
+        </div>
+        <div class="info">
+            <label class="resName">麦当劳餐厅</label>
+            <label class="resType">快餐便当</label>
+            <p class="resSales">月销量：200</p>
+            <label class="resAddress">江苏省南京市鼓楼区汉口路22号</label>
+            <label class="resDiscount">满40减20</label>
+            <label class="resCost">配送费：￥2.0</label>
+        </div>
+
+    </div>
+    <div class="restaurant">
+        <div class="imgAndId">
+            <img src="../../image/restaurant_icon/Mcc.jpg" class="resImage">
+
+        </div>
+        <div class="info">
+            <label class="resName">麦当劳餐厅</label>
+            <label class="resType">快餐便当</label>
+            <p class="resSales">月销量：200</p>
+            <label class="resAddress">江苏省南京市鼓楼区汉口路22号</label>
+            <label class="resDiscount">满40减20</label>
+            <label class="resCost">配送费：￥2.0</label>
+        </div>
+
+    </div>
+    <div class="restaurant">
+
+    </div>
+    <div class="restaurant">
+
+    </div>
 </div>
 </body>
 </html>
