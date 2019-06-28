@@ -165,6 +165,16 @@ public class GoodsController {
                 single.setStartTime(DateUtil.stringToTimestamp(map.get("startTime").toString()));
                 single.setEndTime(DateUtil.stringToTimestamp(map.get("endTime").toString()));
                 singleService.addSingle(single);
+                single = singleService.getSingleByNameAndRid(name, rid);
+                String imgData = map.get("imgData").toString();
+                if (imgData.contains(".")) {
+                    single.setPicPath("src/main/resources/static/image/single_icon/single_default.png");
+                } else {
+                    String path = "src/main/resources/static/image/single_icon/single_" + single.getSid() + ".png";
+                    ImageUtil.base64ToImage(imgData, path);
+                    single.setPicPath(path);
+                }
+                singleService.updateSingle(single);
                 Collection<Singles> singlesCollection = restaurantService.getRestaurantById(rid).getSinglesByRid();
                 for (Singles singles : singlesCollection) {
                     singles.setStartTimeString(DateUtil.timestampToString(singles.getStartTime()));
@@ -222,7 +232,7 @@ public class GoodsController {
     @RequestMapping(value = "/addPackage", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> addPackage(String[] singleName, int[] singleNum, String packageName, double packageCost, int packageNum, String packageType,
-                                          int packageDiscount, String startTime, String endTime, HttpServletRequest request) {
+                                          int packageDiscount, String startTime, String endTime, String imgData, HttpServletRequest request) {
         Map<String, Object> res = new HashMap<>();
         HttpSession session = request.getSession(false);
         if (session == null || !session.getAttribute("type").equals("restaurant")) {
@@ -247,7 +257,16 @@ public class GoodsController {
             packages.setEndTime(DateUtil.stringToTimestamp(endTime));
             packages.setRid(rid);
             packageService.addPackage(packages);
-            int pid = packageService.getPackageByNameAndRid(packageName, rid).getPid();
+            packages = packageService.getPackageByNameAndRid(packageName, rid);
+            int pid = packages.getPid();
+            if (imgData.contains(".")) {
+                packages.setPicPath("src/main/resources/static/image/package_icon/package_default.png");
+            } else {
+                String path = "src/main/resources/static/image/package_icon/package_" + pid + ".png";
+                ImageUtil.base64ToImage(imgData, path);
+                packages.setPicPath(path);
+            }
+            packageService.updatePackage(packages);
             Map<String, Integer> singleMap = new HashMap<>();
             for (int i = 0; i < singleName.length; i++) {
                 if (!singleMap.containsKey(singleName[i])) {
@@ -263,12 +282,6 @@ public class GoodsController {
                 packageSingle.setSid(singleService.getSingleByNameAndRid(s, rid).getSid());
                 packageSingleService.addPackageSingle(packageSingle);
             }
-            Collection<Packages> packagesCollection = restaurantService.getRestaurantById(rid).getPackagesByRid();
-            for (Packages p : packagesCollection) {
-                p.setStartTimeString(DateUtil.timestampToString(p.getStartTime()));
-                p.setEndTimeString(DateUtil.timestampToString(p.getEndTime()));
-            }
-            res.put("packages", packagesCollection);
         } else {
             res.put("message", "error");
         }
@@ -278,7 +291,7 @@ public class GoodsController {
     @RequestMapping(value = "/updatePackage", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> updatePackage(String[] singleName, int[] singleNum, String packageName, double packageCost, int packageNum, String packageType,
-                                          int packageDiscount, String startTime, String endTime, HttpServletRequest request) {
+                                          int packageDiscount, String startTime, String endTime, String imgData, HttpServletRequest request) {
         Map<String, Object> res = new HashMap<>();
         HttpSession session = request.getSession(false);
         if (session == null || !session.getAttribute("type").equals("restaurant") || session.getAttribute("pid") == null) {
@@ -296,6 +309,10 @@ public class GoodsController {
                 res.put("message", "package");
             } else {
                 res.put("message", "success");
+                String path = "src/main/resources/static/image/package_icon/package_" + pid + ".png";
+                //System.out.println(imgData);
+                ImageUtil.base64ToImage(imgData, path);
+                packages.setPicPath(path);
                 packages.setNum(packageNum);
                 packages.setCost(packageCost);
                 packages.setType(packageType);
