@@ -9,388 +9,45 @@
     <link href="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css" rel="stylesheet">
     <script src="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap-select/1.13.3/js/i18n/defaults-zh_CN.js"></script>
+
     <script>
-
-        window.onload=function () {
-            $.ajax({
-                type: "post",
-                async: true,
-                url: "/getGoods",
-                data: {},
-                dataType: 'json',
-                success: function (data) {
-                    console.log(data);
-                    switch (data.message) {
-                        case 'error':
-                            window.location.href = '/login';
-                            break;
-                        case 'success':
-                            $("#userName").html(data.rName + "<b class='caret'></b>");
-                            setSingleTable(data.singleList);
-                            setPackageTable(data.packageList);
-                            $("#addPSModal").on('hidden.bs.modal', function() {
-
-                                $('#packageModal').css({'overflow-y':'scroll'});
-                            });
-                    }
-                }
-            });
-        };
-
-        function setSingleTable(singleList) {
-            var singles = [];
-            var str = "";
-            $.each(singleList, function (i) {
-               str += "<tr><td>" + singleList[i].name + "</td><td>" + singleList[i].cost + "</td><td>" +
-                       singleList[i].num + "</td><td>" + singleList[i].type + "</td><td>" + singleList[i].discount +
-                       "</td><td>" + singleList[i].startTimeString + "</td><td>" + singleList[i].endTimeString +
-                       "</td></tr>";
-               singles.push(singleList[i].name);
-            });
-
-            if (str == "") {
-                str = "<tr><td colspan='7'>您还未发布单品信息</td></tr>";
-            }
-            $("#singleTable").html(str);
-            setSingleSelect(singles);
-            $("#singleTable tr").click(function () {
-                var td = $(this).find("td");
-                if (td.length > 1) {
-                    $("#singleName").val(td.eq(0).html()).attr('disabled', true);
-                    $("#singleCost").val(td.eq(1).html());
-                    $("#singleNum").val(td.eq(2).html());
-                    $("#singleType").val(td.eq(3).html());
-                    $("#singleDiscount").val(td.eq(4).html());
-                    var start = td.eq(5).html().replace(" ", "T").substr(0, 16);
-                    var end = td.eq(6).html().replace(" ", "T").substr(0, 16);
-                    $("#startSingle").val(start);
-                    $("#endSingle").val(end);
-                    $("#singleModifyBtn").unbind('click').click(function () {
-                        singleUpdate();
-                    }).text("修改");
-                    $("#singleModal").modal("show");
-                }
-
-            });
+        function init() {
+            $("#single").removeClass("chosen");
+            $("#package").removeClass("chosen");
+            $("#newSingle").removeClass("chosen");
+            $("#newPackage").removeClass("chosen");
+            $("#addS").hide();
+            $("#rightMeal").hide();
         }
 
-        function setPackageTable(packageList) {
-            var str = "";
-            $.each(packageList, function (i) {
-                str += "<tr><td>" + packageList[i].name + "</td><td>" + packageList[i].cost + "</td><td>" +
-                    packageList[i].num + "</td><td>" + packageList[i].type + "</td><td>" + packageList[i].discount +
-                    "</td><td>" + packageList[i].startTimeString + "</td><td>" + packageList[i].endTimeString +
-                    "</td></tr>";
-            });
-            if (str == "") {
-                str = "<tr><td colspan='7'>您还未发布套餐信息</td></tr>";
-            }
-            $("#packageTable").html(str);
-            $("#packageTable tr").click(function () {
-                var td = $(this).find("td");
-                if (td.length > 1) {
-                    var name = td.eq(0).html();
-                    $.ajax({
-                        type: "post",
-                        async: true,
-                        url: "/getPackageSingle",
-                        data: {packageName:name},
-                        dataType: 'json',
-                        success: function (data) {
-                            console.log(data);
-                            switch (data.message) {
-                                case 'error':
-                                    window.location.href = '/login';
-                                    break;
-                                case 'success':
-                                    setPackageSingleTable(data.singles);
-                            }
-                        }
-                    });
-                    $("#packageName").val(td.eq(0).html()).attr('disabled', true);
-                    $("#packageCost").val(td.eq(1).html());
-                    $("#packageNum").val(td.eq(2).html());
-                    $("#packageType").val(td.eq(3).html());
-                    $("#packageDiscount").val(td.eq(4).html());
-                    var start = td.eq(5).html().replace(" ", "T").substr(0, 16);
-                    var end = td.eq(6).html().replace(" ", "T").substr(0, 16);
-                    $("#startPackage").val(start);
-                    $("#endPackage").val(end);
-                    $("#packageModifyBtn").unbind('click').click(function () {
-                        packageUpdate();
-                    }).text("修改");
-                    $("#packageModal").modal("show");
-                }
-
-            });
-        }
-        
-        function setPackageSingleTable(singles) {
-            var str = "";
-            $.each(singles, function (i) {
-                str += "<tr><td>" + singles[i].name + "</td><td><input type='number' min='0' class='form-control' value='" +
-                    singles[i].packageNum + "'></td><td><button class='btn btn-danger' onclick='deletePackageSingle(this)'>移除</button></td></tr>"
-            });
-            $("#packageSingleTable").html(str);
+        function showSingle() {
+            init();
+            $("#single").addClass("chosen");
+            $("#rightMeal").show();
         }
 
-        function setSingleSelect(singles) {
-            var str = "";
-            $.each(singles, function (i) {
-                str += "<option>" + singles[i] + "</option>"
-            });
-            $("#singleSelect").append(str).selectpicker("refresh");
+        function showPackage() {
+            init();
+            $("#package").addClass("chosen");
+            $("#rightMeal").show();
         }
-
         function addSingle() {
-            $("#singleName").val("").attr('disabled', false);
-            $("#singleCost").val("");
-            $("#singleNum").val("");
-            $("#singleType").val("");
-            $("#singleDiscount").val("");
-            $("#startSingle").val("");
-            $("#endSingle").val("");
-            $("#singleModifyBtn").unbind('click').click(function () {
-                singleAdd();
-            }).text("添加");
-            $("#singleModal").modal("show");
+            init();
+            $("#newSingle").addClass("chosen");
+            $("#addS").show();
+            $("#newTable").hide();
         }
-
         function addPackage() {
-            $("#packageName").val("").attr('disabled', false);
-            $("#packageCost").val("");
-            $("#packageNum").val("");
-            $("#packageType").val("");
-            $("#packageDiscount").val("");
-            $("#startPackage").val("");
-            $("#endPackage").val("");
-            $("#packageSingleTable").html("");
-            $("#packageModifyBtn").unbind('click').click(function () {
-                packageAdd();
-            }).text("添加");
-            $("#packageModal").modal("show");
+            init();
+            $("#newPackage").addClass("chosen");
+            $("#addS").show();
+            $("#newTable").show();
         }
 
-        function addPackageSingle() {
-            $("#addPSModal").modal("show");
-        }
+        function openSingleModal(divID) {
+            $("#singleName").val(divID);
+            $("#singleModal").modal("show");
 
-        function deletePackageSingle(obj) {
-            $(obj).parents("tr").remove();
-        }
-        
-        function singleAdd() {
-            var singleName = $("#singleName").val();
-            var singleCost = $("#singleCost").val();
-            var singleNum = $("#singleNum").val();
-            var singleType = $("#singleType").val();
-            var singleDiscount = $("#singleDiscount").val();
-            var startTime = $("#startSingle").val();
-            var endTime = $("#endSingle").val();
-            if (singleName == "" || singleCost == "" || singleNum == "" || singleType == "" || singleDiscount == "" ||
-            startTime == "" || endTime == "") {
-                $("#errorMessage").text("单品信息不完整！！");
-                $("#errorModal").modal("show");
-            } else if (!dateError(startTime, endTime)) {
-                $("#errorMessage").text("单品发售时间应是未来一段时间，且开始时间早于结束时间！！");
-                $("#errorModal").modal("show");
-            } else {
-                $.ajax({
-                    type: "post",
-                    async: true,
-                    url: "/addSingle",
-                    data: {singleName:singleName, singleCost:singleCost, singleNum:singleNum, singleType:singleType,
-                    singleDiscount:singleDiscount, startTime:startTime, endTime:endTime},
-                    dataType: 'json',
-                    success: function (data) {
-                        console.log(data);
-                        switch (data.message) {
-                            case 'error':
-                                window.location.href = '/login';
-                                break;
-                            case 'single':
-                                $("#errorMessage").text("已存在该单品名的商品");
-                                $("#errorModal").modal("show");
-                                break;
-                            case 'success':
-                                $("#errorMessage").text("信息发布成功！！！");
-                                $("#singleModal").modal("hide");
-                                $("#errorModal").modal("show");
-                                setSingleTable(data.singleList);
-
-                        }
-                    }
-                });
-            }
-        }
-
-        function singleUpdate() {
-            var singleName = $("#singleName").val();
-            var singleCost = $("#singleCost").val();
-            var singleNum = $("#singleNum").val();
-            var singleType = $("#singleType").val();
-            var singleDiscount = $("#singleDiscount").val();
-            var startTime = $("#startSingle").val();
-            var endTime = $("#endSingle").val();
-            if (singleName == "" || singleCost == "" || singleNum == "" || singleType == "" || singleDiscount == "" ||
-                startTime == "" || endTime == "") {
-                $("#errorMessage").text("单品信息不完整！！");
-                $("#errorModal").modal("show");
-            } else if (!dateError(startTime, endTime)) {
-                $("#errorMessage").text("单品发售时间应是未来一段时间，且开始时间早于结束时间！！");
-                $("#errorModal").modal("show");
-            } else {
-                $.ajax({
-                    type: "post",
-                    async: true,
-                    url: "/updateSingle",
-                    data: {singleName:singleName, singleCost:singleCost, singleNum:singleNum, singleType:singleType,
-                        singleDiscount:singleDiscount, startTime:startTime, endTime:endTime},
-                    dataType: 'json',
-                    success: function (data) {
-                        console.log(data);
-                        switch (data.message) {
-                            case 'error':
-                                window.location.href = '/login';
-                                break;
-                            case 'success':
-                                $("#errorMessage").text("单品信息修改成功！！！");
-                                $("#singleModal").modal("hide");
-                                $("#errorModal").modal("show");
-                                setSingleTable(data.singleList);
-                        }
-                    }
-                });
-            }
-        }
-
-        function addPS() {
-            var name = $("#singleSelect").val();
-            var num = $("#sNum").val();
-            if (name == "" || num == "") {
-                $("#errorMessage").text("您还有为填写的必要信息！！");
-                $("#errorModal").modal("show");
-            } else {
-                var str = "<tr><td>" + name + "</td><td><input type='number' class='form-control' min='0' value='" +
-                        num + "'></td><td><button class='btn btn-danger' onclick='deletePackageSingle(this)'>移除</button></td></tr>";
-                $("#packageSingleTable").append(str);
-            }
-            $("#addPSModal").modal("hide");
-        }
-        
-        function packageAdd() {
-            var packageName = $("#packageName").val();
-            var packageCost = $("#packageCost").val();
-            var packageNum = $("#packageNum").val();
-            var packageType = $("#packageType").val();
-            var packageDiscount = $("#packageDiscount").val();
-            var startTime = $("#startPackage").val();
-            var endTime = $("#endPackage").val();
-            var singleName = [];
-            var singleNum = [];
-            $("#packageSingleTable tr").each(function () {
-                var td = $(this).find("td");
-                var sName = td.eq(0).html();
-                var sNum = td.eq(1).find("input").val();
-                if (sNum > 0) {
-                    singleName.push(sName);
-                    singleNum.push(sNum);
-                }
-            });
-            if (packageName == "" || packageCost == "" || packageNum == "" || packageType == "" || packageDiscount == ""
-            || startTime == "" || endTime == "" || singleName.length == 0) {
-                $("#errorMessage").text("套餐信息不完整或未添加单品！！");
-                $("#errorModal").modal("show");
-            } else if (!dateError(startTime, endTime)) {
-                $("#errorMessage").text("套餐发售时间应是未来一段时间，且开始时间早于结束时间！！");
-                $("#errorModal").modal("show");
-            } else {
-                $.ajax({
-                    type: "post",
-                    async: true,
-                    url: "/addPackage",
-                    data: {singleName:singleName, singleNum:singleNum, packageName:packageName, packageCost:packageCost, packageNum:packageNum, packageType:packageType,
-                        packageDiscount:packageDiscount, startTime:startTime, endTime:endTime},
-                    dataType: 'json',
-                    traditional:true,
-                    success: function (data) {
-                        console.log(data);
-                        switch (data.message) {
-                            case 'error':
-                                window.location.href = '/login';
-                                break;
-                            case 'package':
-                                $("#errorMessage").text("已存在该套餐名的套餐！！");
-                                $("#errorModal").modal("show");
-                                break;
-                            case 'success':
-                                $("#errorMessage").text("套餐信息发布成功！！！");
-                                $("#packageModal").modal("hide");
-                                $("#errorModal").modal("show");
-                                setPackageTable(data.packages);
-                        }
-                    }
-                });
-            }
-        }
-
-        function packageUpdate() {
-            var packageName = $("#packageName").val();
-            var packageCost = $("#packageCost").val();
-            var packageNum = $("#packageNum").val();
-            var packageType = $("#packageType").val();
-            var packageDiscount = $("#packageDiscount").val();
-            var startTime = $("#startPackage").val();
-            var endTime = $("#endPackage").val();
-            var singleName = [];
-            var singleNum = [];
-            $("#packageSingleTable tr").each(function () {
-                var td = $(this).find("td");
-                var sName = td.eq(0).html();
-                var sNum = td.eq(1).find("input").val();
-                if (sNum > 0) {
-                    singleName.push(sName);
-                    singleNum.push(sNum);
-                }
-            });
-            if (packageName == "" || packageCost == "" || packageNum == "" || packageType == "" || packageDiscount == ""
-                || startTime == "" || endTime == "" || singleName.length == 0) {
-                $("#errorMessage").text("套餐信息不完整或未添加单品！！");
-                $("#errorModal").modal("show");
-            } else if (!dateError(startTime, endTime)) {
-                $("#errorMessage").text("套餐发售时间应是未来一段时间，且开始时间早于结束时间！！");
-                $("#errorModal").modal("show");
-            } else {
-                $.ajax({
-                    type: "post",
-                    async: true,
-                    url: "/updatePackage",
-                    data: {singleName:singleName, singleNum:singleNum, packageName:packageName, packageCost:packageCost, packageNum:packageNum, packageType:packageType,
-                        packageDiscount:packageDiscount, startTime:startTime, endTime:endTime},
-                    dataType: 'json',
-                    traditional:true,
-                    success: function (data) {
-                        console.log(data);
-                        switch (data.message) {
-                            case 'error':
-                                window.location.href = '/login';
-                                break;
-                            case 'success':
-                                $("#errorMessage").text("套餐信息修改成功！！！");
-                                $("#packageModal").modal("hide");
-                                $("#errorModal").modal("show");
-                                setPackageTable(data.packages);
-                        }
-                    }
-                });
-            }
-        }
-
-        function dateError(start, end) {
-            var now = new Date();
-            var startTime = new Date(Date.parse(start));
-            var endTime = new Date(Date.parse(end));
-            return now <= startTime && startTime <endTime;
         }
     </script>
 </head>
@@ -410,6 +67,109 @@
         color: black;
         font-size: 16px;
     }
+
+    .meal{
+        border: 5px solid white;
+        width: 283px;
+        height: 140px;
+        float: left;
+        background-color: rgba(245,245,241,0.85);
+    }
+
+    .meal-img{
+        width: 120px;
+        height: 130px;
+        border: 2px solid white;
+        float: left;
+    }
+
+    .meal-content{
+        width: 150px;
+        height: 130px;
+        float: right;
+        border: 2px solid white;
+    }
+
+    .nav_vertical {
+        background-color: rgba(30,155,144,0.85);
+        float: left;
+        width: 160px;
+        height: 600px;
+        position: fixed;
+    }
+
+    .nav_vertical ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+        line-height: 3em;
+    }
+
+    .nav_vertical a {
+        display: block;
+        width: 10em;
+        font-size: 16px;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .chosen{
+        display: block;
+        width: 150px;
+        font-size: 16px;
+        text-align: center;
+        text-decoration: none;
+        color: black;
+        background-color: #E6E6FA;
+    }
+
+    .nav_vertical a:hover {
+        background-color: #E6E6FA;
+    }
+
+    .right_content{
+        position: absolute;
+        left: 200px;
+    }
+
+    .new_left {
+        position: absolute;
+        left: 50px;
+        top: 10px;
+        float: left;
+        width: 500px;
+    }
+
+    .new_img {
+        width: 500px;
+        height: 350px;
+    }
+
+    .new_table {
+        position: relative;
+        top:20px;
+        width: 500px;
+    }
+
+    .new_right {
+        position: absolute;
+        left: 650px;
+        top: 10px;
+        width: 400px;
+    }
+
+    .ui_button {
+        padding:10px;
+        width: 150px;
+        height: 40px;
+        background: lightseagreen;
+        text-align: center;
+        color: #fff;
+    }
+    .ui_button:hover {
+        opacity: 0.9;
+    }
+
 </style>
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
     <div class="container-fluid">
@@ -440,60 +200,89 @@
         </div>
     </div>
 </nav>
-<div class="panel panel-default" id="single">
-    <div class="panel-heading">
-        <h4 class="panel-title">
-            <a data-toggle="collapse" data-parent="#single"
-               href="#collapseOne">
-                单品信息表
-            </a>
-            <a data-toggle="tooltip" title="单击发布新的单品信息" onclick="addSingle()"><img src="../../image/add.png" style="width: 15px;height: 15px" ></a>
-        </h4>
+<div class="nav_vertical">
+    <ul>
+        <li><a class="chosen" id="single" onclick="showSingle()">已有单品</a></li>
+        <li><a id="package" onclick="showPackage()">已有套餐</a></li>
+        <li><a id="newSingle" onclick="addSingle()">发布单品</a></li>
+        <li><a id="newPackage" onclick="addPackage()">发布套餐</a></li>
+    </ul>
+</div>
+<div class="right_content" id="rightMeal">
+    <div class="meal">
+        <div class="meal-img">
+            <img src="../../image/restaurant_icon/restaurant_default.png" style="height: 128px; width: 118px">
+        </div>
+        <div class="meal-content" id="mealContent">
+            <p style="font-size: 18px; margin-left: 5px; font-weight: bolder; margin-top: 2px">蛋炒饭</p>
+            <p style="font-size: 14px; margin-left: 5px"><span style="color: red; ">￥15.00</span></p>
+            <p style="font-size: 14px; margin-left: 5px">余20份</p>
+            <button class="btn btn-primary" style="height: 27px; width: 70px; font-size: 12px; float: right;margin-right: 2px" onclick="openSingleModal('mealContent')">编辑</button>
+        </div>
     </div>
-    <div id="collapseOne" class="panel-collapse collapse in">
-        <table class="table table-bordered table-hover table-striped">
-            <thead>
-            <tr>
-                <th>单品名称</th>
-                <th>单品价格</th>
-                <th>单品数量</th>
-                <th>单品类型</th>
-                <th>折扣(%)</th>
-                <th>单品出售开始时间</th>
-                <th>单品出售截止时间</th>
-            </tr>
-            </thead>
-            <tbody id="singleTable"></tbody>
-        </table>
+    <div class="meal">
+        <div class="meal-img"></div>
+        <div class="meal-content"></div>
+    </div>
+    <div class="meal">
+        <div class="meal-img"></div>
+        <div class="meal-content"></div>
+    </div>
+    <div class="meal">
+        <div class="meal-img"></div>
+        <div class="meal-content"></div>
+    </div>
+    <div class="meal">
+        <div class="meal-img"></div>
+        <div class="meal-content"></div>
     </div>
 </div>
-<div class="panel panel-default" id="package">
-    <div class="panel-heading">
-        <h4 class="panel-title">
-            <a data-toggle="collapse" data-parent="#package" href="#collapseTwo">
-                套餐信息表
-            </a>
-            <a data-toggle="tooltip" title="单击发布新的套餐信息" onclick="addPackage()">
-                <img src="../../image/add.png" style="width: 15px;height: 15px" >
-            </a>
-        </h4>
+
+<div class="right_content" id="addS" style="display: none">
+    <div class="new_left">
+        <div class="new_img">
+            <img src="../../image/single_icon/single_default.png" style="width: 350px;height: 350px;float: left" />
+            <div style="position: relative; top:280px; left:10px" class="btn-group-vertical">
+                <button class="btn btn-default">使用默认图片</button>
+                <label class="ui_button" for="xFile">上传餐点图片</label>
+                <input type="file" id="xFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*">
+            </div>
+        </div>
+        <div class="new_table" id="newTable">
+            <label>套餐内容表<img src="../../image/add.png" data-toggle="tooltip" title="单击添加套餐里的新单品" style="width: 15px;height: 15px" onclick="addPackageSingle()"></label>
+            <table class="table table-bordered table-hover">
+                <thead>
+                <tr>
+                    <th>单品名</th>
+                    <th>单品数量</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="newPSTable">
+                </tbody>
+
+            </table>
+        </div>
     </div>
-    <div id="collapseTwo" class="panel-collapse collapse in">
-        <table class="table table-bordered table-hover table-striped">
-            <thead>
-            <tr>
-                <th>套餐名称</th>
-                <th>套餐价格</th>
-                <th>套餐数量</th>
-                <th>套餐类型</th>
-                <th>折扣(%)</th>
-                <th>套餐出售开始时间</th>
-                <th>套餐出售结束时间</th>
-            </tr>
-            </thead>
-            <tbody id="packageTable"></tbody>
-        </table>
+    <div class="new_right">
+        <label for="nsName">餐点名</label>
+        <input class="form-control" id="nsName">
+        <label for="nsCost">餐点价格</label>
+        <input class="form-control" type="number" min="0" id="nsCost">
+        <label for="nsNum">餐点数量</label>
+        <input type="number" class="form-control" id="nsNum" min="0">
+        <label for="nsType">餐点类型</label>
+        <input class="form-control" id="nsType">
+        <label for="nsDiscount">折扣(%)</label>
+        <input id="nsDiscount" type="number" class="form-control" min="0" max="100">
+        <label for="nsStart">餐点开售时间</label>
+        <input type="datetime-local" id="nsStart" class="form-control">
+        <label for="nsEnd">餐点结束时间</label>
+        <input type="datetime-local" id="nsEnd" class="form-control">
+        <button class="btn btn-danger" style="position:relative;left: 40px;top:20px;font-size: 16px">清空输入</button>
+        <button class="btn btn-info" style="position:relative;left: 160px;top:20px;font-size: 16px">添加新品</button>
     </div>
+
 </div>
 
 <div class="modal fade" id="singleModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -508,20 +297,31 @@
                 </h4>
             </div>
             <div class="modal-body">
-                <label for="singleName">单品名</label>
-                <input class="form-control" id="singleName" disabled>
-                <label for="singleCost">单品价格</label>
-                <input class="form-control" type="number" min="0" id="singleCost">
-                <label for="singleNum">单品数量</label>
-                <input type="number" class="form-control" id="singleNum" min="0">
-                <label for="singleType">单品类型</label>
-                <input class="form-control" id="singleType">
-                <label for="singleDiscount">折扣(%)</label>
-                <input id="singleDiscount" type="number" class="form-control" min="0" max="100">
-                <label for="startSingle">餐点开售时间</label>
-                <input type="datetime-local" id="startSingle" class="form-control">
-                <label for="endSingle">餐点结束时间</label>
-                <input type="datetime-local" id="endSingle" class="form-control">
+                <div style="width: 100%;height: 150px">
+                    <img src="../../image/single_icon/single_default.png" style="width: 150px;height: 150px;float: left" />
+                    <div class="btn-group-vertical" style="position: relative; top:70px; left:10px">
+                        <button class="btn btn-default">使用默认图片</button>
+                        <label class="ui_button" for="sFile">上传餐点图片</label>
+                        <input type="file" id="sFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*">
+                    </div>
+                </div>
+                <div>
+                    <label for="singleName">单品名</label>
+                    <input class="form-control" id="singleName">
+                    <label for="singleCost">单品价格</label>
+                    <input class="form-control" type="number" min="0" id="singleCost">
+                    <label for="singleNum">单品数量</label>
+                    <input type="number" class="form-control" id="singleNum" min="0">
+                    <label for="singleType">单品类型</label>
+                    <input class="form-control" id="singleType">
+                    <label for="singleDiscount">折扣(%)</label>
+                    <input id="singleDiscount" type="number" class="form-control" min="0" max="100">
+                    <label for="startSingle">餐点开售时间</label>
+                    <input type="datetime-local" id="startSingle" class="form-control">
+                    <label for="endSingle">餐点结束时间</label>
+                    <input type="datetime-local" id="endSingle" class="form-control">
+                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="singleModifyBtn">修改</button>
@@ -542,33 +342,44 @@
                 </h4>
             </div>
             <div class="modal-body">
-                <label for="packageName">套餐名</label>
-                <input class="form-control" id="packageName" disabled>
-                <label for="packageCost">套餐价格</label>
-                <input class="form-control" id="packageCost" type="number" min="0">
-                <label for="packageNum">套餐数量</label>
-                <input type="number" class="form-control" id="packageNum" min="0">
-                <label for="packageType">套餐类型</label>
-                <input class="form-control" id="packageType">
-                <label for="packageDiscount">折扣(%)</label>
-                <input class="form-control" type="number" min="0" max="100" id="packageDiscount">
-                <label for="startPackage">餐点开售时间</label>
-                <input type="datetime-local" id="startPackage" class="form-control">
-                <label for="endPackage">餐点结束时间</label>
-                <input type="datetime-local" id="endPackage" class="form-control">
-                <label>套餐内容表<img src="../../image/add.png" data-toggle="tooltip" title="单击添加套餐里的新单品" style="width: 15px;height: 15px" onclick="addPackageSingle()"></label>
-                <table class="table table-bordered table-hover">
-                    <thead>
-                    <tr>
-                        <th>单品名</th>
-                        <th>单品数量</th>
-                        <th>操作</th>
-                    </tr>
-                    </thead>
-                    <tbody id="packageSingleTable">
-                    </tbody>
+                <div style="width: 100%;height: 150px">
+                    <img src="../../image/single_icon/single_default.png" style="width: 150px;height: 150px;float: left" />
+                    <div class="btn-group-vertical" style="position: relative; top:70px; left:10px">
+                        <button class="btn btn-default">使用默认图片</button>
+                        <label class="ui_button" for="nFile">上传餐点图片</label>
+                        <input type="file" id="nFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*">
+                    </div>
+                </div>
+                <div>
+                    <label for="packageName">套餐名</label>
+                    <input class="form-control" id="packageName" disabled>
+                    <label for="packageCost">套餐价格</label>
+                    <input class="form-control" id="packageCost" type="number" min="0">
+                    <label for="packageNum">套餐数量</label>
+                    <input type="number" class="form-control" id="packageNum" min="0">
+                    <label for="packageType">套餐类型</label>
+                    <input class="form-control" id="packageType">
+                    <label for="packageDiscount">折扣(%)</label>
+                    <input class="form-control" type="number" min="0" max="100" id="packageDiscount">
+                    <label for="startPackage">餐点开售时间</label>
+                    <input type="datetime-local" id="startPackage" class="form-control">
+                    <label for="endPackage">餐点结束时间</label>
+                    <input type="datetime-local" id="endPackage" class="form-control">
+                    <label>套餐内容表<img src="../../image/add.png" data-toggle="tooltip" title="单击添加套餐里的新单品" style="width: 15px;height: 15px" onclick="addPackageSingle()"></label>
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                        <tr>
+                            <th>单品名</th>
+                            <th>单品数量</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="packageSingleTable">
+                        </tbody>
 
-                </table>
+                    </table>
+                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="packageModifyBtn">修改</button>
@@ -640,5 +451,6 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
+
 </body>
 </html>
