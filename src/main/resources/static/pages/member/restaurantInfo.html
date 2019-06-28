@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
     <script>
         var rName = "";
         var restaurant = new Object();
@@ -264,6 +266,147 @@
         color: black;
         font-size: 16px;
     }
+
+    .background{
+        margin-top: 10px;
+        width: 100%;
+        height: 150px;
+    }
+
+    .noticeT{
+        position: absolute;
+        left:1030px;
+        width: 250px;
+        height: 30px;
+        background-color: #40b7ff;
+        text-align:center;
+        border-radius: 2px;
+    }
+
+    .notice{
+        position: absolute;
+        top:255px;
+        left:1030px;
+        width: 250px;
+        height: 250px;
+        border: #c4b3b3 1px solid;
+        padding: 10px 10px 10px 10px;
+    }
+
+
+
+    .food{
+        width: 95%;
+        height: 80px;
+        border: #c4b3b3 1px solid;
+        float: left;
+        margin:-10px 20px 20px 0;
+        border-radius: 8px;
+    }
+
+    .orderPane{
+        width: 820px;
+        float: left;
+        position: absolute;
+        left: 200px;
+        top:225px;
+
+        height:auto;
+        overflow:hidden
+    }
+
+    .orderPane1{
+        width: 820px;
+        float: left;
+        position: relative;
+        left: 200px;
+        top:800px;
+
+        height:auto;
+        overflow:hidden
+    }
+
+
+
+    .orderedFood{
+        width: 100%;
+        border-bottom: #c4b3b3 1px solid  ;
+        height: 30px;
+        float: left;
+    }
+
+    .price{
+        background-color: #3e4c4b;
+        width: 66.67%;
+        height: 40px;
+        margin-top: 5px;
+    }
+
+    .singleName{
+        margin-top: 25px;
+        margin-left: 50px;
+        font-size: 18px;
+        font-weight: bold;
+        width: 15%;
+        height: 35px;
+    }
+
+    .singlePrice{
+        margin-top: 20px;
+        margin-left: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        width: 15%;
+        height: 35px;
+    }
+
+    .singleNum{
+        margin-top: 20px;
+        margin-left: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        width: 17%;
+        height: 35px;
+    }
+
+    .singleImg{
+        margin-top: 0px;
+        margin-left: 10px;
+
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+    }
+
+    .singleButton{
+        margin-top:-5px;
+        margin-left: 10px;
+        width: 12%;
+        height: 35px;
+        font-size: 12px;
+    }
+
+    .shoppingNum{
+        width: 15%;
+        height: 35px;
+        margin-top: 15px;
+        margin-left: 10px;
+    }
+
+    .shoppingName{
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 10px;
+        width: 60%;
+    }
+
+    .shoppingPrice{
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 5px;
+        width: 30%;
+    }
+
 </style>
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
     <div class="container-fluid">
@@ -293,165 +436,77 @@
         </div>
     </div>
 </nav>
-<div class="col-sm-3" style="text-align: center">
-    <label id="rName" style="font-size: 32px" data-toggle="popover" data-placement="bottom" data-trigger="hover">restaurantName</label>
+<div class="background">
+    <img class="img-circle" src="../../image/restaurant_icon/Mcc.jpg" style="border-radius: 50%;
+    position: relative; top:20px; left:200px;" width="100px" height="100px">
+    <label style="font-size: 20px;   font-weight: bold; position: relative; top:0px; left:260px;" id="resName">麦当劳餐厅</label>
+    <label style="font-size: 14px;  width:80px;font-weight: bold; position: absolute; top:110px; left:950px;">起送价</label>
+    <label style="font-size: 14px; width:80px;font-weight: bold; position: absolute; top:110px; left:1085px;">配送费</label>
+    <label style="font-size: 14px; width:80px;font-weight: bold; position: absolute; top:110px; left:1220px;" >满减优惠</label>
+    <label style="font-size: 17px; width:80px;font-weight: bold; position: absolute; top:150px; left:950px;">20元</label>
+    <label style="font-size: 17px; width:80px;font-weight: bold; position: absolute; top:150px; left:1085px;">配送费￥5</label>
+    <label style="font-size: 17px; width:80px;font-weight: bold; position: absolute; top:150px; left:1220px;" id="resDiscount">满45减20</label>
 </div>
-<div class="col-sm-6" style="float: right; text-align: center;font-size: 18px;height: 25px">
-    <label style="position: absolute;left: 20%">起送费</label>
-    <label id="minCost" style="position: absolute;left: 22%;top: 100%;">20元</label>
-    <label style="position:absolute;right: 40%;">配送费</label>
-    <label id="humanCost" style="position: absolute;right: 42%;top: 100%;">4元</label>
-</div>
-<div class="col-sm-8 container-fluid" style="position: absolute;top: 150px;">
-    <div class="panel panel-default" id="single">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#single"
-                   href="#collapseOne">
-                    单品列表
-                </a>
-            </h4>
-        </div>
-        <div id="collapseOne" class="panel-collapse collapse in">
-            <div class="btn-group" style="float: right;">
-                <button class="btn btn-default" onclick="singleSorted('default')">默认排序</button>
-                <button class="btn btn-default" onclick="singleSorted('desc')">价格&ensp;&darr;</button>
-                <button class="btn btn-default" onclick="singleSorted('asc')">价格&ensp;&uarr;</button>
-            </div>
-            <table class="table table-bordered table-hover table-striped" style="text-align: center">
-                <thead style="font-size: 16px">
-                <tr>
-                    <th>菜品名</th>
-                    <th>价格(/元)</th>
-                    <th>类别</th>
-                    <th>折扣(%)</th>
-                    <th>剩余数量</th>
-                    <th>购买数量</th>
-                </tr>
-                </thead>
-                <tbody style="font-size: 16px" id="singleTable">
-                </tbody>
-            </table>
-        </div>
+
+
+<div class="orderPane" id="singlePane">
+    <label style="width: 98%; font-size: 20px; font-weight: bold; border-bottom: #c4b3b3 2px solid">单品</label>
+    <div class="food">
+        <img src="../../image/restaurant_icon/Mcc.jpg" class="singleImg">
+        <label class="singleName" id="singleName">汉堡</label>
+        <label class="singlePrice" id="singlePrice">￥20.0</label>
+        <label class="singleNum" id="singleNum">库存：20</label>
+        <input type="text" class="shoppingNum">
+        <button class="btn btn-primary singleButton" id="singleButton">加入购物车</button>
     </div>
-    <div class="panel panel-default" id="package">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#package" href="#collapseTwo">
-                    套餐列表
-                </a>
-            </h4>
-        </div>
-        <div id="collapseTwo" class="panel-collapse collapse in">
-            <div class="btn-group" style="float: right;">
-                <button class="btn btn-default" onclick="packageSorted('default')">默认排序</button>
-                <button class="btn btn-default" onclick="packageSorted('desc')">价格&ensp;&darr;</button>
-                <button class="btn btn-default" onclick="packageSorted('asc')">价格&ensp;&uarr;</button>
-            </div>
-            <table class="table table-bordered table-hover table-striped" style="text-align: center">
-                <thead style="font-size: 16px">
-                <tr>
-                    <th>菜品名</th>
-                    <th>价格(/元)</th>
-                    <th>类别</th>
-                    <th>折扣(%)</th>
-                    <th>剩余数量</th>
-                    <th>购买数量</th>
-                </tr>
-                </thead>
-                <tbody style="font-size: 16px" id="packageTable">
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <div class="food"></div>
+    <div class="food"></div>
+    <div class="food"></div>
+    <div class="food"></div>
+    <div class="food"></div>
+
+
 
 </div>
-<div class="col-sm-4" style="position: absolute;top: 130px;right: 10px;">
-    <h3 style="background-color: #2492d6;color: white;text-align: center">商家有话说</h3>
-    <p id="description" style="font-size: 15px;font-weight: lighter"></p>
-</div>
-<div class="col-sm-4" style="position: absolute;top: 300px;right: 10px;">
-    <h3 style="background-color: #2492d6;color: white;text-align: center">满减优惠表</h3>
-    <table class="table table-bordered table-hover table-striped" style="text-align: center">
-        <thead style="font-size: 16px">
-        <tr>
-            <th>满额(/元)</th>
-            <th>减额(/元)</th>
-        </tr>
-        </thead>
-        <tbody style="font-size: 16px" id="reductionTable">
-        </tbody>
-    </table>
-</div>
-<div class="col-sm-1" style="position: fixed; right: 5px;bottom: 10px">
-    <button class="btn btn-primary" onclick="shop()"><img src="../../image/shopping.png" style="width: 25px;height: 25px">购物车</button>
-</div>
-<div class="modal fade" id="shoppingInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                    &times;
-                </button>
-                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
-                    购物车
-                </h4>
-            </div>
-            <div class="modal-body">
-                <label>金额总计</label>
-                <p id="totalMoney"></p>
-                <table class="table table-bordered table-hover" style="text-align: center">
-                    <tr>
-                        <th>菜品名</th>
-                        <th>价格(/元)</th>
-                        <th>折扣(%)</th>
-                        <th>购买数量</th>
-                    </tr>
-                    <tbody style="font-size: 16px" id="orderTable">
-                    </tbody>
-                </table>
-                <label for="noteArea">备注</label>
-                <textarea class="form-control" id="noteArea">无</textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="payBtn" onclick="setOrder()">支付</button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">
-                    关闭
-                </button>
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal -->
-</div>
-<div class="modal fade" id="packageInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                    &times;
-                </button>
-                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
-                    套餐内容
-                </h4>
-            </div>
-            <div class="modal-body">
-                <table class="table table-bordered table-hover" style="text-align: center">
-                    <tr>
-                        <th>菜品名</th>
-                        <th>数量</th>
-                    </tr>
-                    <tbody style="font-size: 16px" id="packageInfoTable">
-                    </tbody>
 
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">
-                    关闭
-                </button>
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal -->
+<div class="orderPane1" id="setPane">
+    <label style="width: 98%; font-size: 20px; font-weight: bold; border-bottom: #c4b3b3 2px solid"  title="Header" data-toggle="popover" data-placement="right" data-content="Content">套餐</label>
+    <div class="food">
+        <img src="../../image/restaurant_icon/Mcc.jpg" class="singleImg">
+        <label class="singleName" >汉堡</label>
+        <label class="singlePrice" >￥20.0</label>
+        <label class="singleNum" >库存：20</label>
+        <input type="text" class="shoppingNum">
+        <button class="btn btn-primary singleButton" >加入购物车</button>
+    </div>
 </div>
+
+<div class="noticeT"><label style="font-weight: bold; font-size: 16px; color: white">商 家 公 告</label></div>
+<div class="notice"><p style="font-size: 15px" id="resNotice">兄弟萌，现在商家酬宾大减价，快来抢抢抢！满45减20，你买不了吃亏买不了上当</p></div>
+
+<div class="card" style=" position:  fixed;bottom: 0; right: 0;z-index: 999;padding: 0px 0px 0px 0px ">
+    <div class="card-header" style="width: 300px; height: 50px "  >
+        <a class="card-link" data-toggle="collapse" href="#collapseOne">
+            购物车
+        </a>
+    </div>
+    <div id="collapseOne" class="collapse show" data-parent="#accordion"  style="width: 300px; height: auto;
+     padding: 0px 0px 0px 0px">
+        <div class="card-body" id="shoppingCar">
+
+            <div class="orderedFood"> </div>
+            <div class="orderedFood"> </div>
+            <div class="orderedFood"> </div>
+
+
+        </div>
+    </div>
+    <div class="price" ><label style="margin-left: 50px ; margin-top:10px;font-size: 18px; font-weight: bold;
+    color: white" id="price" >总价：200元</label></div>
+    <button type="button" class="btn btn-primary" style="height: 40px;  width: 100px; position: fixed; bottom: 1px; right: 1px;"
+            id="payButton">支 付</button>
+</div>
+
 
 </body>
 </html>
