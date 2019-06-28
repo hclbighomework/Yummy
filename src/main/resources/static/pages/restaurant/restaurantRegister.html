@@ -7,7 +7,7 @@
     <link href="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css" rel="stylesheet">
     <script src="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap-select/1.13.3/js/i18n/defaults-zh_CN.js"></script>
-    <link href="../../css/restaurant/RegisterCSS.css" rel="stylesheet" type="text/css"/>
+    <!--<link href="../../css/restaurant/RegisterCSS.css" rel="stylesheet" type="text/css"/>-->
     <meta charset="UTF-8">
     <title>餐厅注册</title>
     <script>
@@ -31,18 +31,18 @@
         }
     </script>
 </head>
-<body>
-<img src="../../image/yummy.png">
-<div class="container" style="width: 300px; height: 580px; background-color: #dce0ff;">
+<body style="background: antiquewhite">
+
+<div class="container" style="border: #3e4c4b; border-style: groove; margin-top: 50px; width: 400px; height: 580px; background-color: #dce0ff;">
     <form role="form">
-        <h2 style="text-align: center">餐厅注册</h2>
+        <img src="../../image/yummy.png">
         <div class="form-group">
-            <label for="userName">餐厅名</label>
-            <input type="text" class="form-control" id="userName">
+            <!--<label for="userName">餐厅名</label>-->
+            <input type="text" class="form-control" id="userName" placeholder="餐厅名">
         </div>
         <div class="form-group">
-            <label for="password">密码</label>
-            <input type="password" class="form-control" id="password">
+            <!--<label for="password">密码</label>-->
+            <input type="password" class="form-control" id="password" placeholder="密码">
         </div>
         <div class="form-group">
             <label for="rType">餐厅类型</label>
@@ -62,12 +62,12 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="phone">商家电话</label>
-            <input type="text" class="form-control" id="phone">
+            <!--<label for="phone">商家电话</label>-->
+            <input type="text" class="form-control" id="phone" placeholder="商家电话">
         </div>
         <div class="form-group">
-            <label for="description">商家描述</label>
-            <textarea class="form-control" id="description"></textarea>
+            <!--<label for="description">商家描述</label>-->
+            <textarea class="form-control" id="description" placeholder="商家描述"></textarea>
         </div>
         <button type="button" class="btn btn-primary btn-block" onclick="verify()">注册</button>
         <button type="button" class="btn btn-default btn-block" onclick="history.back()">返回</button>
@@ -83,7 +83,7 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="myModalLabel">
-                    注册成功！！！
+                    注册成功！
                 </h4>
             </div>
             <div class="modal-body" id="successMessage">
@@ -110,7 +110,7 @@
                 </h4>
             </div>
             <div class="modal-body">
-                您还有必要信息未输入！！！
+                您还有必要信息未输入.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
@@ -131,7 +131,7 @@
                 </h4>
             </div>
             <div class="modal-body">
-                您输入的手机号不正确！！！
+                您输入的手机号不正确.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
@@ -148,11 +148,11 @@
                     &times;
                 </button>
                 <h4 class="modal-title">
-                    注册失败
+                    注册失败.
                 </h4>
             </div>
             <div class="modal-body">
-                该餐厅名已被注册使用！！！
+                该餐厅名已被注册使用！
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
