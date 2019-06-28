@@ -48,7 +48,7 @@ public class RegisterController {
         System.out.println(address.getAid());
         String rid = IDUtil.getNewRid();
         Restaurants restaurants = new Restaurants(rid, name, password, type, phone, description, address.getAid());
-        //restaurants.setAddressByAid(address);
+        restaurants.setPicPath("src/main/resources/static/img/restaurant_icon/restaurant_default.png");//restaurants.setAddressByAid(address);
         Map<String, Object> res = new HashMap<>();
         res.put("message", restaurantService.register(restaurants));
         res.put("id", rid);

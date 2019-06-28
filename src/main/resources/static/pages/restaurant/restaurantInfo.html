@@ -248,34 +248,35 @@
             };
             reader.onload = function (e) {
                 console.log("成功读取....");
-                $("#img").attr('src', e.target.result);
-                var data=$("#img").attr('src');
-                data=data.substr(data.indexOf(",")+1);
-                $.ajax({
-                    type: "post",
-                    async: true,
-                    url: "/uploadrespic",
-                    data: {imgData:data},
-                    dataType: 'json',
-                    success: function (data) {
-                        console.log(data);
-                        switch (data.message) {
-                            case 'error':
-                                window.location.href = '/login';
-                                break;
-                            case 'success':
-                                alert("更改头像成功");
-                        }
-                    }
-                });
+                $("#pic").attr('src', e.target.result);
             };
 
-            reader.readAsDataURL(file)
+            reader.readAsDataURL(file);
+            var data=$("#pic").attr('src');
+            data = data.substr(data.indexOf(",") + 1);
+            console.log(data);
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/uploadrespic",
+                data: {imgData:data},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            alert("更改头像成功");
+                    }
+                }
+            });
         }
 
     </script>
 </head>
-<body background="whitesmoke">
+<body style="background-color: whitesmoke">
 <style>
     .navbar{
         position: relative;
@@ -356,8 +357,8 @@
     <textarea class="form-control" id="description" disabled></textarea>
     <br/><br>
     <div class="button-group">
-        <button class="btn btn-primary" style="width: 30%" onclick="modifyInfo()">修改信息</button>&emsp;
-        <button class="btn btn-warning" style="width: 30%" onclick="modifyPassword()">密码管理</button>&emsp;
+        <button class="btn btn-primary" style="width: 30%" onclick="modifyInfo()">修改信息</button>
+        <button class="btn btn-warning" style="width: 30%" onclick="modifyPassword()">密码管理</button>
 <!--        <button class="btn btn-info" style="width:30%" onclick="uploadPic()"></button>-->
         <label class="btn btn-info" style="width:30%" for="pFile">上传头像</label>
         <input type="file" id="pFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*" onchange="uploadImg(this)">
@@ -394,7 +395,6 @@
         </tbody>
     </table>
 </div></div>
-</div>
 </div>
 </div>
 
