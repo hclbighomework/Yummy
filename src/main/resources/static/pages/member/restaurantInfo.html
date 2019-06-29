@@ -15,8 +15,10 @@
         var singleNum = [];
         var packageName= [];
         var packageNum = [];
+        var reductionList1=[];
         var url=window.location.search;
         var rid=url.substr(url.indexOf('=')+1);
+        var totalPrice=0;
 
         window.onload=function () {
             $.ajax({
@@ -26,6 +28,9 @@
                 data:{rid:rid},
                 async:'true',
                 success:function (data) {
+                    reductionList1=data.restaurant.reductionsByRid;
+                    var totalPrice1="总价：0元";
+                    $('#totalPrice').text(totalPrice1);
                     $('#shoppingCar').html("");
                     $('#resName').text(data.restaurant.name);
                     $('#resNotice').text(data.restaurant.description);
@@ -125,11 +130,24 @@
                 packageName.push(name);
                 packageNum.push(num);
             }
+            totalPrice=totalPrice+parseFloat(price);
+            for (var i = 0; i < reductionList1.length - 1; i++) {
+                if (totalPrice >= reductionList1[i].fullCost && totalPrice < reductionList1[i + 1].fullCost) {
+                    totalPrice = totalPrice - reductionList1[i].reduceCost;
+                    break;
+                }
+            }
+            if (totalPrice >= reductionList1[reductionList1.length - 1].fullCost) {
+                totalPrice = totalPrice - reductionList1[reductionList1.length - 1].reduceCost;
+            }
+            totalPrice += restaurant.humanCost;
+            var totalPriceL="总价："+totalPrice+"元"
             $('#shoppingCar').html(shopPane+"<div class=\"orderedFood\">\n" +
                 "                <label class=\"shoppingName\">"+name+"</label>\n" +
                 "                <label class=\"shopNum\">"+shopNum+"</label>\n" +
                 "                <label class=\"shoppingPrice\">"+price+"</label>\n" +
                 "            </div>");
+            $('#totalPrice').text(totalPriceL)
         }
 
 
@@ -267,14 +285,14 @@
 
         function setOrder() {
             console.log(singleName);
-            var note = $("#noteArea").val();
+
             var cost = $("#totalMoney").html();
             console.log(cost);
             $.ajax({
                     type: "post",
                     async: true,
                     url: "/setOrder",
-                    data: {singleName: singleName, singleNum: singleNum, packageName: packageName, packageNum: packageNum, rName:rName, note:note, cost:cost},
+                    data: {singleName: singleName, singleNum: singleNum, packageName: packageName, packageNum: packageNum, rid:rid,  cost:totalPrice},
                     dataType: 'json',
                     traditional:true,
                     success: function (data) {
@@ -631,9 +649,9 @@
         </div>
     </div>
     <div class="price" ><label style="margin-left: 50px ; margin-top:10px;font-size: 18px; font-weight: bold;
-    color: white" id="price" >总价：200元</label></div>
+    color: white" id="totalPrice" >总价：200元</label></div>
     <button type="button" class="btn btn-primary" style="height: 40px;  width: 100px; position: fixed; bottom: 1px; right: 1px;"
-            id="payButton">支 付</button>
+            id="payButton" onclick="setOrder()">支 付</button>
 </div>
 
 
