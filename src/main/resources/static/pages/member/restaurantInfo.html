@@ -10,7 +10,6 @@
     <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
     <script>
         var rName = "";
-        var restaurant = new Object();
         var singleName = [];
         var singleNum = [];
         var packageName= [];
@@ -18,7 +17,9 @@
         var reductionList1=[];
         var url=window.location.search;
         var rid=url.substr(url.indexOf('=')+1);
-        var totalPrice=0;
+        var totalPrice = 0.0;
+        var humanCost = 0.0;
+        var minCost = 0.0;
 
         window.onload=function () {
             $.ajax({
@@ -28,24 +29,34 @@
                 data:{rid:rid},
                 async:'true',
                 success:function (data) {
-                    reductionList1=data.restaurant.reductionsByRid;
-                    var totalPrice1="总价：0元";
-                    $('#totalPrice').text(totalPrice1);
-                    $('#shoppingCar').html("");
-                    $('#resName').text(data.restaurant.name);
-                    $('#resNotice').text(data.restaurant.description);
-                    var resImgData="data:image/png;base64,"+data.restaurant.imgData;
-                    $('#resImg').attr('src',resImgData);
-                    var minCost=data.restaurant.minCost+"元";
-                    $('#minCost').text(minCost);
-                    var humanCost= data.restaurant.humanCost+"元";
-                    $('#humanCost').text(humanCost)
-                    setSingle(data.restaurant.singlesByRid);
-                    setPackage(data.restaurant.packagesByRid);
-                    setReduction(data.restaurant.reductionsByRid);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            $(document).attr('title', data.restaurant.name + "——Yummy");
+                            humanCost = data.restaurant.humanCost;
+                            minCost = data.restaurant.minCost;
+                            reductionList1=data.restaurant.reductionsByRid;
+                            var totalPrice1="总价：0元";
+                            $('#totalPrice').text(totalPrice1);
+                            $('#shoppingCar').html("");
+                            $('#resName').text(data.restaurant.name);
+                            $('#resNotice').text(data.restaurant.description);
+                            var resImgData="data:image/png;base64,"+data.restaurant.imgData;
+                            $('#resImg').attr('src',resImgData);
+                            var minCost=data.restaurant.minCost+"元";
+                            $('#minCost').text(minCost);
+                            var humanCost= data.restaurant.humanCost+"元";
+                            $('#humanCost').text(humanCost);
+                            setSingle(data.restaurant.singlesByRid);
+                            setPackage(data.restaurant.packagesByRid);
+                            setReduction(data.restaurant.reductionsByRid);
+                    }
+
                 }
             })
-        }
+        };
 
         function setSingle(singleList){
             $('#singlePane').html("");
@@ -61,7 +72,7 @@
                     "        <label class=\"singleName\" id='name1"+singleId+"' >"+singleName+"</label>\n" +
                     "        <label class=\"singlePrice\" id='price1"+singleId+"'>"+singlePrice+"</label>\n" +
                     "        <label class=\"singleNum\" >"+singleNum+"</label>\n" +
-                    "        <input type=\"text\" class=\"shoppingNum\" id='num1"+singleId+"'>\n" +
+                    "        <input type=\"number\" class=\"shoppingNum\" id='num1"+singleId+"'>\n" +
                     "        <button class=\"btn btn-primary singleButton\" onclick=getId(this) id='s"+singleId+"'>加入购物车</button>\n" +
                     "    </div>")
 
@@ -91,7 +102,7 @@
                     "        <label class=\"singleName\" id='name2"+setId+"'>"+setName+"</label>\n" +
                     "        <label class=\"singlePrice\" id='price2"+setId+"'>"+setPrice+"</label>\n" +
                     "        <label class=\"singleNum\" >"+setNum+"</label>\n" +
-                    "        <input type=\"text\" class=\"shoppingNum\" id='num2"+setId+"'>\n" +
+                    "        <input type=\"number\" class=\"shoppingNum\" id='num2"+setId+"'>\n" +
                     "        <button class=\"btn btn-primary singleButton\" onclick=getId(this) id='p"+setId+"'>加入购物车</button>\n" +
                     "    </div>")
 
@@ -99,6 +110,7 @@
         }
 
         function getId(element){
+            console.log(reductionList1);
             var shopPane=$("#shoppingCar").html();
             var fid=element.id;
             var type=fid.substr(0,1);
@@ -114,6 +126,7 @@
                 var numid="#num1"+id;
                 name=$(nameid).text();
                 price=$(priceid).text();
+                price1 = price.substr(1);
                 num=$(numid).val();
                 shopNum=num+"份";
                 singleName.push(name);
@@ -125,8 +138,8 @@
                 var priceid="#price2"+id;
                 var numid="#num2"+id;
                 name=$(nameid).text();
-                price="￥"+$(priceid).text();
-                price1=$(priceid).text();
+                price = $(priceid).text();
+                price1 = price.substr(1);
                 num=$(numid).val();
                 shopNum=num+"份";
                 packageName.push(name);
@@ -135,15 +148,18 @@
             totalPrice=totalPrice+parseFloat(price1);
             for (var i = 0; i < reductionList1.length - 1; i++) {
                 if (totalPrice >= reductionList1[i].fullCost && totalPrice < reductionList1[i + 1].fullCost) {
-                    totalPrice = totalPrice - reductionList1[i].reduceCost;
+                    totalPrice = totalPrice - parseFloat(reductionList1[i].reduceCost);
+                    console.log(totalPrice);
                     break;
                 }
             }
             if (totalPrice >= reductionList1[reductionList1.length - 1].fullCost) {
-                totalPrice = totalPrice - reductionList1[reductionList1.length - 1].reduceCost;
+                totalPrice = totalPrice - parseFloat(reductionList1[reductionList1.length - 1].reduceCost);
             }
-            totalPrice += restaurant.humanCost;
-            var totalPriceL="总价："+totalPrice+"元"
+            totalPrice += parseFloat(humanCost);
+            console.log(humanCost);
+            console.log(totalPrice);
+            var totalPriceL="总价："+totalPrice+"元";
             $('#shoppingCar').html(shopPane+"<div class=\"orderedFood\">\n" +
                 "                <label class=\"shoppingName\">"+name+"</label>\n" +
                 "                <label class=\"shopNum\">"+shopNum+"</label>\n" +
