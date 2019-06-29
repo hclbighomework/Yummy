@@ -47,6 +47,7 @@
                                 $("#address").append(data.order.address);
                                 $("#cost").append(data.order.cost);
                                 $("#note").append(data.order.note);
+                                $("#rImage").attr("src", "data:image/png;base64," + data.imgData );
                                 setSelectPicker(data.member.addressCollection);
                                 setSingleTable(data.order.singlesCollection, data.order.packagesCollection);
                                 if (data.order.address == null) {
@@ -296,8 +297,11 @@
 <br /><br />
 
 <div class="row clearfix" style="margin-left: 80px; margin-right: 80px">
-    <div class="col-md-12">
-        <p id="rName"></p>
+    <div class="col-md-1">
+        <img id="rImage" style="width: 80px; height: 80px" />
+    </div>
+    <div class="col-md-11">
+        <p id="rName" style="font-size: 30px"></p>
         <p id="oid" class="p1">订单号:</p>
         <p class="p3"> &emsp; &emsp; </p>
         <p id="rPhone" class="p2">商家电话:</p>
