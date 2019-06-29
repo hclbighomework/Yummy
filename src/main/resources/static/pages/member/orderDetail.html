@@ -48,8 +48,7 @@
                                 $("#cost").append(data.order.cost);
                                 $("#note").append(data.order.note);
                                 setSelectPicker(data.member.addressCollection);
-                                setSingleTable(data.order.singlesCollection);
-                                setPackageTable(data.order.packagesCollection);
+                                setSingleTable(data.order.singlesCollection, data.order.packagesCollection);
                                 if (data.order.address == null) {
                                     $("#payBtn").attr('disabled', true);
                                 }
@@ -73,22 +72,19 @@
                 }
             );
         };
-        function setSingleTable(singleList) {
+        function setSingleTable(singleList, packageList) {
             var str = "";
             $.each(singleList, function (i) {
                 str += "<tr><td>" + singleList[i].name + "</td><td>" + singleList[i].cost +
                     "</td><td>" + singleList[i].orderNum + "</td>";
             });
-            $("#singleTable").html(str);
-        }
-        function setPackageTable(packageList) {
-            var str = "";
             $.each(packageList, function (i) {
                 str += "<tr><td>" + packageList[i].name + "</td><td>" + packageList[i].cost +
                     "</td><td>" + packageList[i].orderNum + "</td>"
             });
-            $("#packageTable").html(str);
+            $("#ItemTable").html(str);
         }
+
         function setSelectPicker(addressList) {
             var str = "";
             $.each(addressList, function (i) {
@@ -258,6 +254,15 @@
         font-size: 16px;
         font-weight: normal;
     }
+    .p1{
+        float: left;
+    }
+    .p2{
+        float: left;
+    }
+    .p3{
+        float: left;
+    }
 </style>
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
     <div class="container-fluid">
@@ -287,69 +292,60 @@
         </div>
     </div>
 </nav>
-<div class="col-sm-4">
-    <p id="oid">订单号：</p>
-    <p id="uName">会员姓名：</p>
-    <p id="level">会员等级：</p>
-    <p id="uPhone">联系电话：</p>
-    <br/>
-    <p id="rName">餐厅名：</p>
-    <p id="rPhone">商家联系方式：</p>
-    <br/>
-    <p id="orderTime">下单时间：</p>
-    <p id="arriveTime">送达时间：</p>
-    <p id="state">订单状态：</p>
-    <p id="address">配送地址：</p>
-    <p id="cost">消费总计：</p>
-    <p id="note">备注：</p>
-</div>
-<div class="col-sm-6 container-fluid" style="position: absolute;top: 150px;right: 1%;">
-    <div class="panel panel-default" id="single">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#single"
-                   href="#collapseOne">
-                    单品列表
-                </a>
-            </h4>
-        </div>
-        <div id="collapseOne" class="panel-collapse collapse in">
-            <table class="table table-bordered table-hover table-striped" style="text-align: center">
-                <thead style="font-size: 16px">
-                <tr>
-                    <th>菜品名</th>
-                    <th>价格(/元)</th>
-                    <th>购买数量</th>
-                </tr>
-                </thead>
-                <tbody style="font-size: 16px" id="singleTable">
-                </tbody>
-            </table>
-        </div>
+
+<br /><br />
+
+<div class="row clearfix" style="margin-left: 80px; margin-right: 80px">
+    <div class="col-md-12">
+        <p id="rName"></p>
+        <p id="oid" class="p1">订单号:</p>
+        <p class="p3"> &emsp; &emsp; </p>
+        <p id="rPhone" class="p2">商家电话:</p>
     </div>
-    <div class="panel panel-default" id="package">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#package" href="#collapseTwo">
-                    套餐列表
-                </a>
-            </h4>
+</div>
+
+<br />
+
+<div class="row clearfix" style="margin-left: 80px; margin-right: 80px">
+    <div class="col-md-6">
+        <table class="table table-hover table-striped" style="border-style: none; text-align: left">
+            <thead style="font-size: 16px">
+            <tr>
+                <th>菜品名</th>
+                <th>价格(/元)</th>
+                <th>购买数量</th>
+            </tr>
+            </thead>
+            <tbody style="font-size: 16px" id="ItemTable">
+            </tbody>
+        </table>
+
+        <div class style="float: right">
+            实际支付：<p id="cost" style="font-size: 48px; color: red"></p>
         </div>
-        <div id="collapseTwo" class="panel-collapse collapse in">
-            <table class="table table-bordered table-hover table-striped" style="text-align: center">
-                <thead style="font-size: 16px">
-                <tr>
-                    <th>菜品名</th>
-                    <th>价格(/元)</th>
-                    <th>购买数量</th>
-                </tr>
-                </thead>
-                <tbody style="font-size: 16px" id="packageTable">
-                </tbody>
-            </table>
+
+    </div>
+    <div class="col-md-1">
+
+    </div>
+    <div class="col-md-5">
+        <h4 style="size: 16px"><strong>配送信息</strong></h4>
+        <div class>
+            <br />
+            <p id="orderTime">下单时间：</p>
+            <p id="arriveTime">送达时间：</p>
+            <br />
+
+            <p id="uName">联系人：</p>
+            <p id="uPhone">联系电话：</p>
+            <p id="address">收货地址：</p>
+            <br />
+
+            <p id="note">备注：</p>
         </div>
     </div>
 </div>
+
 <!--计时器-->
 <div id="timer" style="color:red;font-size: 23px;position: absolute;right: 5%;"></div>
 <div class="btn-group" style="position: fixed; right: 5px;bottom: 10px" id="btnGroup">

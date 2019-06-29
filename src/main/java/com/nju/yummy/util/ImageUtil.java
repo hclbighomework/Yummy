@@ -16,6 +16,8 @@ public class ImageUtil {
      * @return 图片base64码
      */
     public static String imageToBase64(String path) {
+        System.out.println(path);
+
         BASE64Encoder encoder = new BASE64Encoder();
         File file = new File(path);
         String imgStr = "";
