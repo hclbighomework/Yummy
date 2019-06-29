@@ -29,7 +29,21 @@
             );
         };
 
-        function resType(type) {
+        function initButton() {
+            $("#all").removeClass("btn-primary").addClass("btn-default");
+            $("#zonghe").removeClass("btn-primary").addClass("btn-default");
+            $("#kuaican").removeClass("btn-primary").addClass("btn-default");
+            $("#tese").removeClass("btn-primary").addClass("btn-default");
+            $("#zhaji").removeClass("btn-primary").addClass("btn-default");
+            $("#tianpin").removeClass("btn-primary").addClass("btn-default");
+            $("#yiguo").removeClass("btn-primary").addClass("btn-default");
+            $("#xiaochi").removeClass("btn-primary").addClass("btn-default");
+        }
+        function resType(obj) {
+            initButton();
+            var id = obj.id;
+            var type = obj.innerText;
+            $("#" + id).removeClass("btn-default").addClass("btn-primary");
             $.ajax({
                     type: "post",
                     async: true,
@@ -264,14 +278,14 @@
 
 <div class="col-sm-8" style="float: left">
     <div class="btn-group">
-        <button type="button" class="btn btn-default" onclick="resType(this.innerText)">全部店家</button>
-        <button type="button" class="btn btn-default" onclick="resType(this.innerText)">综合店面</button>
-        <button type="button" class="btn btn-default" onclick="resType(this.innerText)">快餐便当</button>
-        <button type="button" class="btn btn-default" onclick="resType(this.innerText)">特色菜系</button>
-        <button type="button" class="btn btn-default" onclick="resType(this.innerText)">异国料理</button>
-        <button type="button" class="btn btn-default" onclick="resType(this.innerText)">炸鸡汉堡</button>
-        <button type="button" class="btn btn-default" onclick="resType(this.innerText)">甜品饮品</button>
-        <button type="button" class="btn btn-default" onclick="resType(this.innerText)">小吃烧烤</button>
+        <button type="button" class="btn btn-default" id="all" onclick="resType(this)">全部店家</button>
+        <button type="button" class="btn btn-default" id="zonghe" onclick="resType(this)">综合店面</button>
+        <button type="button" class="btn btn-default" id="kuaican" onclick="resType(this)">快餐便当</button>
+        <button type="button" class="btn btn-default" id="tese" onclick="resType(this)">特色菜系</button>
+        <button type="button" class="btn btn-default" id="yiguo" onclick="resType(this)">异国料理</button>
+        <button type="button" class="btn btn-default" id="zhaji" onclick="resType(this)">炸鸡汉堡</button>
+        <button type="button" class="btn btn-default" id="tianpin" onclick="resType(this)">甜品饮品</button>
+        <button type="button" class="btn btn-default" id="xiaochi" onclick="resType(this)">小吃烧烤</button>
     </div>
 
     </div>
