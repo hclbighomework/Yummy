@@ -28,6 +28,7 @@ public class Singles {
     private Restaurants restaurantsByRid;
     private String startTimeString;
     private String endTimeString;
+    private String imgData;
 
     @Id
     @Column(name = "sid", nullable = false)
@@ -205,5 +206,12 @@ public class Singles {
         this.endTimeString = endTimeString;
     }
 
+    @Transient
+    public String getImgData() {
+        return imgData;
+    }
 
+    public void setImgData(String imgData) {
+        this.imgData = imgData;
+    }
 }

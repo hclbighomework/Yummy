@@ -2,6 +2,7 @@ package com.nju.yummy.controller;
 
 import com.nju.yummy.model.*;
 import com.nju.yummy.service.*;
+import com.nju.yummy.util.ImageUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -29,6 +30,8 @@ public class MemberController {
     private AddressService addressService;
     @Resource
     private OrderService orderService;
+    @Resource
+    private ReductionService reductionService;
 
     @RequestMapping(value = "/getMemberInfo", method = RequestMethod.POST)
     @ResponseBody
@@ -62,6 +65,14 @@ public class MemberController {
         } else {
             restaurants = restaurantService.getRestaurantByType(type);
         }
+        for (Restaurants restaurant : restaurants) {
+            restaurant.setImgData(ImageUtil.imageToBase64(restaurant.getPicPath()));
+            restaurant.setSales(orderService.getSalesByMonth(restaurant.getRid()));
+            ArrayList<Reduction> reductions = reductionService.getSortedReductionByRid(restaurant.getRid());
+            if (reductions == null || reductions.size() == 0) {
+
+            }
+        }
         Map<String, Object> res = new HashMap<>();
         res.put("resList", restaurants);
         return res;
@@ -72,7 +83,10 @@ public class MemberController {
     public Map<String, Object> searchRestaurant(@RequestParam Map<String, Object> map) {
         String name = map.get("key").toString();
         ArrayList<Restaurants> restaurants = restaurantService.getByNameKey(name);
-        Map<String, ArrayList<Singles>> singleMap = new HashMap<>();
+        for (Restaurants restaurant : restaurants) {
+            restaurant.setImgData(ImageUtil.imageToBase64(restaurant.getPicPath()));
+        }
+        /*Map<String, ArrayList<Singles>> singleMap = new HashMap<>();
         for (Restaurants restaurant : restaurants) {
             singleMap.put(restaurant.getRid(), new ArrayList<>(restaurant.getSinglesByRid()));
         }
@@ -125,9 +139,9 @@ public class MemberController {
                 restaurant.setPackagesByRid(packageMap.get(s));
                 restaurantsArrayList.add(restaurant);
             }
-        }
+        }*/
         Map<String, Object> res = new HashMap<>();
-        res.put("resList", restaurantsArrayList);
+        res.put("resList", restaurants);
         return res;
     }
 

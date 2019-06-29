@@ -8,7 +8,7 @@
     <property name="connection.url">jdbc:mysql://localhost:3306/yummy</property>
     <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
     <property name="connection.username">root</property>
-    <property name="connection.password">2463909185as</property>
+    <property name="connection.password">byltc</property>
     <mapping class="com.nju.yummy.model.Address"/>
     <mapping class="com.nju.yummy.model.MemberAddress"/>
     <mapping class="com.nju.yummy.model.Members"/>

@@ -29,6 +29,14 @@ public class PackageServiceImpl implements PackageService {
     }
 
     @Override
+    public Packages getPackageByID(int pid) {
+        if (packageDAO.findById(pid).isPresent()) {
+            return packageDAO.findById(pid).get();
+        }
+        return null;
+    }
+
+    @Override
     public ArrayList<Packages> getPackagesByNameKey(String name) {
         return packageDAO.findAllByNameKey("%" + name + "%");
     }

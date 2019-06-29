@@ -31,6 +31,9 @@ public class Restaurants {
     private Address addressByAid;
     //@JsonIgnore
     private Collection<Singles> singlesByRid;
+    private String imgData;
+    private String reductionString;
+    private int sales;
 
     public Restaurants() {
 
@@ -235,5 +238,30 @@ public class Restaurants {
         this.singlesByRid = singlesByRid;
     }
 
+    @Transient
+    public String getImgData() {
+        return imgData;
+    }
 
+    public void setImgData(String imgData) {
+        this.imgData = imgData;
+    }
+
+    @Transient
+    public String getReductionString() {
+        return reductionString;
+    }
+
+    public void setReductionString(String reductionString) {
+        this.reductionString = reductionString;
+    }
+
+    @Transient
+    public int getSales() {
+        return sales;
+    }
+
+    public void setSales(int sales) {
+        this.sales = sales;
+    }
 }

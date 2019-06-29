@@ -10,6 +10,8 @@ public interface PackageService {
 
     public void updatePackage(Packages packages);
 
+    public Packages getPackageByID(int pid);
+
     public ArrayList<Packages> getPackagesByNameKey(String name);
 
     public Packages getPackageByNameAndRid(String name, String rid);

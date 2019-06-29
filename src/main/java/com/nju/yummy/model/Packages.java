@@ -28,6 +28,7 @@ public class Packages {
     private Collection<Singles> singlesCollection;
     private String startTimeString;
     private String endTimeString;
+    private String imgData;
 
     @Id
     @Column(name = "pid", nullable = false)
@@ -207,5 +208,12 @@ public class Packages {
         this.endTimeString = endTimeString;
     }
 
+    @Transient
+    public String getImgData() {
+        return imgData;
+    }
 
+    public void setImgData(String imgData) {
+        this.imgData = imgData;
+    }
 }

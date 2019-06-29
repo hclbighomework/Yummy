@@ -67,4 +67,7 @@ public interface OrderDAO extends CrudRepository<Orders, String> {
     @Query("select sum(o.adminMoney) as totalCost from Orders o")
     public Optional<Double> getTotalMoneyForManager();
 
+    @Query("select count(o) as sales from Orders o where o.rid=:rid and o.orderTime>=:startTime and o.orderTime<=:endTime")
+    public Optional<Integer> getSalesByMonthForRestaurant(String rid, Timestamp startTime, Timestamp endTime);
+
 }

@@ -1,13 +1,12 @@
 package com.nju.yummy.controller;
 
-import com.nju.yummy.model.Members;
 import com.nju.yummy.model.Reduction;
 import com.nju.yummy.model.Restaurants;
 import com.nju.yummy.service.AddressService;
 import com.nju.yummy.service.OrderService;
 import com.nju.yummy.service.ReductionService;
 import com.nju.yummy.service.RestaurantService;
-import com.nju.yummy.service.impl.OrderServiceImpl;
+import com.nju.yummy.util.ImageUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -40,6 +39,7 @@ public class RestaurantController {
         String rid = session.getAttribute("id").toString();
         Restaurants restaurant = restaurantService.getRestaurantById(rid);
         if (restaurant != null) {
+            restaurant.setImgData(ImageUtil.imageToBase64(restaurant.getPicPath()));
             res.put("message", "success");
             res.put("restaurant", restaurant);
             res.put("addressList", addressService.getAllDescription());
@@ -178,6 +178,30 @@ public class RestaurantController {
             res.put("totalMoney", restaurants.getTotalMoney());
             res.put("orderNum", restaurants.getOrdersByRid().size());
             res.put("statistics", orderService.getStatisticsForRes(id));
+        } else {
+            res.put("message", "error");
+        }
+        return res;
+    }
+
+    @RequestMapping(value = "/uploadrespic", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> uploadResPic(@RequestParam Map<String, Object> map, HttpServletRequest request) {
+        Map<String, Object> res = new HashMap<>();
+        HttpSession session = request.getSession(false);
+        if (session == null || !session.getAttribute("type").equals("restaurant")) {
+            res.put("message", "error");
+            return res;
+        }
+        String id = session.getAttribute("id").toString();
+        Restaurants restaurant = restaurantService.getRestaurantById(id);
+        if (restaurant != null) {
+            res.put("message", "success");
+            String imgData = map.get("imgData").toString();
+            String path = "src/main/resources/static/image/restaurant_icon/res_" + id + ".png";
+            ImageUtil.base64ToImage(imgData, path);
+            restaurant.setPicPath(path);
+            restaurantService.updateRestaurant(restaurant);
         } else {
             res.put("message", "error");
         }

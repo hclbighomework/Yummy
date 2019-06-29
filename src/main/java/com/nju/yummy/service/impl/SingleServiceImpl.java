@@ -30,6 +30,14 @@ public class SingleServiceImpl implements SingleService {
     }
 
     @Override
+    public Singles getSingleBySid(int sid) {
+        if (singleDAO.findById(sid).isPresent()) {
+            return singleDAO.findById(sid).get();
+        }
+        return null;
+    }
+
+    @Override
     public ArrayList<Singles> getSinglesByNameKey(String name) {
         return singleDAO.findAllByNameKey("%" + name + "%");
     }

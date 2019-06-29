@@ -32,6 +32,7 @@
                             $("#description").val(data.restaurant.description);
                             $("#minCost").val(data.restaurant.minCost);
                             $("#humanCost").val(data.restaurant.humanCost);
+                            $("#pic").attr('src','data:image/png;base64,'+data.restaurant.imgData);
                             setAddressSelect(data.addressList);
                             setReductionTable(data.restaurant.reductionsByRid);
                     }
@@ -224,9 +225,58 @@
                 });
             }
         }
+
+        function uploadImg(obj) {
+            var file = obj.files[0];
+
+            console.log(obj.id);
+
+            var reader = new FileReader();
+
+            //读取文件过程方法
+            reader.onloadstart = function (e) {
+                console.log("开始读取....");
+            };
+            reader.onprogress = function (e) {
+                console.log("正在读取中....");
+            };
+            reader.onabort = function (e) {
+                console.log("中断读取....");
+            };
+            reader.onerror = function (e) {
+                console.log("读取异常....");
+            };
+            reader.onload = function (e) {
+                console.log("成功读取....");
+                $("#pic").attr('src', e.target.result);
+            };
+
+            reader.readAsDataURL(file);
+            var data=$("#pic").attr('src');
+            data = data.substr(data.indexOf(",") + 1);
+            console.log(data);
+            $.ajax({
+                type: "post",
+                async: true,
+                url: "/uploadrespic",
+                data: {imgData:data},
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    switch (data.message) {
+                        case 'error':
+                            window.location.href = '/login';
+                            break;
+                        case 'success':
+                            alert("更改头像成功");
+                    }
+                }
+            });
+        }
+
     </script>
 </head>
-<body>
+<body style="background-color: whitesmoke">
 <style>
     .navbar{
         position: relative;
@@ -244,20 +294,27 @@
     }
 </style>
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" role="navigation" style="background-color: rgba(44,123,255,0.85); height: 60px; font-size: 20px">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-6">
     <div class="container-fluid">
         <div class="navbar-header">
             <a class="navbar-brand" href="#"><img src="../../image/yummy2.png" style="height: 30px; width: 80px"></a>
         </div>
         <div>
             <ul class="nav navbar-nav">
-                <li style="width: 120px;text-align: center"><a href="/restaurant_main">订单处理</a></li>
-                <li style="width: 120px;text-align: center"><a href="/restaurant_goods">商品发布</a></li>
+                <li style="width: 120px;text-align: center;padding-top: 5px"><a href="/restaurant_main">订单处理</a></li>
+                <li style="width: 120px;text-align: center;padding-top:5px"><a href="/restaurant_goods">商品发布</a></li>
+                <li style="width: 120px;text-align: center;padding-top:5px"><a onclick="alert('具体您的问题请联系qq1060226998寻求解答哦！')">我的客服</a></li>
+                <li style="width: 100px;text-align: center;padding-top:10px; height:10px"><a onclick="alert('具体规则请联系qq1060226998寻求帮助哦！')"><small>规则中心</small></a></li>
             </ul>
         </div>
+    </div></div>
+            <div class="col-md-4">
         <div class="collapse navbar-collapse justify-content-end">
             <ul class="nav navbar-nav">
                 <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName">
+                    <a class="dropdown-toggle" data-toggle="dropdown" id="userName" style="padding-top: 20px">
                         userName
                         <b class="caret"></b>
                     </a>
@@ -270,40 +327,60 @@
                 </li>
             </ul>
         </div>
+            </div>
     </div>
 </nav>
-
-<div class="col-sm-3" style="position: absolute;left: 10%;">
+<br><br>
+<div class="row">
+    <div class="col-md-2"></div>
+<div class="col-md-8" >
+    <div class="row">
+        <div class="col-md-5">
     <h2 style="font-weight: bold">餐厅信息</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <br>
+    <img src="" style="height:100px;width:100px" id="pic">
+                </div>
+                <div class="col-md-8">
     <label for="rid">识别码</label>
-    <input class="form-control" id="rid" disabled>
+    <input class="form-control" id="rid" disabled><br>
     <label for="rName">店名</label>
-    <input class="form-control" id="rName" disabled>
+    <input class="form-control" id="rName" disabled><br>
+                </div>
+            </div>
     <label for="rAddress">地址</label>
-    <input class="form-control" id="rAddress" disabled>
+    <input class="form-control" id="rAddress" disabled><br>
     <label for="phone">联系电话</label>
-    <input class="form-control" id="phone" disabled>
+    <input class="form-control" id="phone" disabled><br>
     <label for="description">商家描述</label>
     <textarea class="form-control" id="description" disabled></textarea>
-    <br/>
+    <br/><br>
     <div class="button-group">
-        <button class="btn btn-primary" style="width: 153px" onclick="modifyInfo()">修改信息</button>
-        <button class="btn btn-warning" style="width: 153px" onclick="modifyPassword()">密码管理</button>
+        <button class="btn btn-primary" style="width: 30%" onclick="modifyInfo()">修改信息</button>
+        <button class="btn btn-warning" style="width: 30%" onclick="modifyPassword()">密码管理</button>
+<!--        <button class="btn btn-info" style="width:30%" onclick="uploadPic()"></button>-->
+        <label class="btn btn-info" style="width:30%" for="pFile">上传头像</label>
+        <input type="file" id="pFile" style="position:absolute;clip:rect(0 0 0 0);" accept="image/*" onchange="uploadImg(this)">
+
     </div>
-</div>
-<div class="col-sm-3" style="position: absolute;right: 15%;">
-    <h2 style="font-weight: bold">配送费用</h2>
+        </div>
+        <div class="col-md-2"></div>
+<div class="col-md-5" >
+    <br>
+    <h2 style="font-weight: bold">配送费用</h2><br>
     <label for="minCost">起送费</label>
-    <input class="form-control" type="number" id="minCost" disabled>
+    <input class="form-control" type="number" id="minCost" disabled><br>
     <label for="humanCost">配送费</label>
-    <input class="form-control" type="number" id="humanCost" disabled>
+    <input class="form-control" type="number" id="humanCost" disabled><br><br>
     <br/>
-    <button class="btn btn-info" style="width: 98%" onclick="modifyCost()">费用管理</button>
-</div>
-<div class="col-sm-3" style="position: absolute;right: 15%;top: 50%">
+    <button class="btn btn-info" style="width: 98%" onclick="modifyCost()">费用管理</button><br>
+
+    <br><br><br><br><br><br><br>
+
     <h2 style="font-weight: bold">
-        满减优惠&ensp;<img src="../../image/add.png" data-toggle="tooltip" title="单击增加新满减优惠" style="width: 15px;height: 15px" onclick="addReduction()">
-        <img src="../../image/save.png" data-toggle="tooltip" title="单击保存满减优惠" style="width: 15px;height: 15px " onclick="saveReduction()">
+        满减优惠&ensp;<img src="../../image/add.png" data-toggle="tooltip" title="单击增加新满减优惠" style="width: 20px;height: 20px" onclick="addReduction()">
+        <img src="../../image/save.png" data-toggle="tooltip" title="单击保存满减优惠" style="width: 20px;height: 20px " onclick="saveReduction()">
     </h2>
 
     <table class="table table-bordered table-hover">
@@ -317,7 +394,10 @@
         <tbody id="reductionTable">
         </tbody>
     </table>
+</div></div>
 </div>
+</div>
+
 <div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
