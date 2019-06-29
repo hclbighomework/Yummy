@@ -3,7 +3,7 @@ body {
     font-size: 12px;
     height: 600px;
     background-size:cover;
-    background: #CCCCCC url("../../image/login_back.jpg") fixed center center;
+    background: #dce0ff;
 }
 
 p, h1, form, button {
