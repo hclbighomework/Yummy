@@ -43,49 +43,49 @@
         function setSingle(singleList){
             $('#singlePane').html("");
             $.each(singleList, function (i) {
-                var pane=$('#singlePane').html();
+                var singlePane=$('#singlePane').html();
                 var singleName=singleList[i].name;
                 var imgData=singleList[i].imgData;
                 var singlePrice="￥"+singleList[i].cost;
                 var singleNum="库存:"+singleList[i].num;
                 var singleId=singleList[i].sid;
-                $('#singlePane').html(pane+"<div class=\"food\">\n" +
+                $('#singlePane').html(singlePane+"<div class=\"food\">\n" +
                     "        <img src=data:image/png;base64'"+imgData+"' class=\"singleImg\">" +
-                    "        <label class=\"singleName\" >"+singleName+"</label>\n" +
-                    "        <label class=\"singlePrice\" >"+singlePrice+"</label>\n" +
+                    "        <label class=\"singleName\" id='name1"+singleId+"' >"+singleName+"</label>\n" +
+                    "        <label class=\"singlePrice\" id='price1"+singleId+"'>"+singlePrice+"</label>\n" +
                     "        <label class=\"singleNum\" >"+singleNum+"</label>\n" +
                     "        <input type=\"text\" class=\"shoppingNum\" id='num1"+singleId+"'>\n" +
-                    "        <button class=\"btn btn-primary singleButton\" onclick=getId(this) id='"+singleId+"'>加入购物车</button>\n" +
+                    "        <button class=\"btn btn-primary singleButton\" onclick=getId(this) id=s'"+singleId+"'>加入购物车</button>\n" +
                     "    </div>")
 
             })
         }
 
         function  setReduction(reductionList) {
-            $('.discount').html("");
-            $.each(reductionList,function () {
+            $('#resDiscount').html("");
+            $.each(reductionList,function (i) {
                 var str="满"+reductionList[i].fullCost+"减"+reductionList[i].reduceCost;
-                var pane=$('.discount').html();
-                $('.discount').html(pane+"<p style=\"font-size: 15px\" >"+str+"</p>");
+                var pane=$('#resDiscount').html();
+                $('#resDiscount').html(pane+"<p style=\"font-size: 15px\" >"+str+"</p>");
             })
         }
 
         function setPackage(packageList){
             $('#setPane').html("");
             $.each(packageList, function (i) {
-                var pane=$('#setPane').html();
+                var setPane=$('#setPane').html();
                 var setName=packageList[i].name;
                 var imgData=packageList[i].imgData;
                 var setPrice="￥"+packageList[i].cost;
                 var setNum="库存:"+packageList[i].num;
                 var setId=packageList[i].sid;
-                $('#singlePane').html(pane+"<div class=\"food\">\n" +
-                    "        <img src=data:image/png;base64'"+imgData+"' class=\"singleImg\">" +
-                    "        <label class=\"singleName\" >"+setName+"</label>\n" +
-                    "        <label class=\"singlePrice\" >"+setPrice+"</label>\n" +
+                $('#setPane').html(setPane+"<div class=\"food\">\n" +
+                    "        <img src='data:image/png;base64,"+imgData+"' class=\"singleImg\">" +
+                    "        <label class=\"singleName\" id='name2"+setId+"'>"+setName+"</label>\n" +
+                    "        <label class=\"singlePrice\" id='price2"+setId+"'>"+setPrice+"</label>\n" +
                     "        <label class=\"singleNum\" >"+setNum+"</label>\n" +
                     "        <input type=\"text\" class=\"shoppingNum\" id='num2"+setId+"'>\n" +
-                    "        <button class=\"btn btn-primary singleButton\" onclick=getId(this) id='"+setId+"'>加入购物车</button>\n" +
+                    "        <button class=\"btn btn-primary singleButton\" onclick=getId(this) id=p'"+setId+"'>加入购物车</button>\n" +
                     "    </div>")
 
             })
@@ -93,23 +93,7 @@
 
         function getId(element){
             var id=element.id;
-            $.ajax({
-                url:'getI',
-                method:'post',
-                data:{menuI:id},
-                dateType:'json',
-                success:function (data) {
-                    $('#shoppingCar').html("");
-                    for(var i=0;i<data.nameList.length;i++){
-                        var price="￥"+data.priceList[i];
-                        var old=$('#shoppingCar').html();
-                        $('#shoppingCar').html(old+"<div class=\"orderedFood\"><label class=\"shoppingName\">"+data.nameList[i]+"</label>" +
-                            "<label class=\"shoppingPrice\">"+price+"</label></div>")
-                    }
-                    var totalPrice="总价："+data.totalPrice+"元";
-                    $('#price').text(totalPrice);
-                }
-            })
+
         }
 
 
@@ -614,7 +598,7 @@
 <div class="notice"><p style="font-size: 15px" id="resNotice">兄弟萌，现在商家酬宾大减价，快来抢抢抢！满45减20，你买不了吃亏买不了上当</p></div>
 
 <div class="discountT"><label style="font-weight: bold; font-size: 16px; color: white">满 减 优 惠</label></div>
-<div class="discount"><p style="font-size: 15px" >满45减20</p></div>
+<div class="discount" id="resDiscount"><p style="font-size: 15px" >满45减20</p></div>
 
 <div class="card" style=" position:  fixed;bottom: 0; right: 0;z-index: 999;padding: 0px 0px 0px 0px ">
     <div class="card-header" style="width: 300px; height: 50px "  >
