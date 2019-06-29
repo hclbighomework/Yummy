@@ -120,7 +120,83 @@
         </div>
     </div>
 </nav>
-<div class="col-sm-3">
+
+<br /><br />
+
+<div class="row clearfix" style="margin-left: 80px; margin-right: 80px">
+    <div class="col-md-3 column">
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <label for="startTime">开始时间</label>
+                <input type="date" class="form-control" id="startTime">
+            </div>
+        </div>
+        <br />
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <label for="endTime">截止时间</label>
+                <input type="date" class="form-control" id="endTime">
+            </div>
+        </div>
+        <br />
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <label for="orderState">订单状态</label>
+                <select class="form-control" id="orderState">
+                    <option value="全部">全部</option>
+                    <option value="已取消">已取消</option>
+                    <option value="配送中">配送中</option>
+                    <option value="已支付">已支付</option>
+                    <option value="支付中">支付中</option>
+                    <option value="已完成">已完成</option>
+                </select>
+            </div>
+        </div>
+        <br />
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <!--<img src="../../image/question_mark.png" data-toggle="tooltip" title="点击问号显示帮助" style="width: 23px;height: 23px;" onclick="help()">-->
+                <label for="searchKey">关键词搜索</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchKey" placeholder="搜索会员..." onkeydown="onKeyDown(event)"/>
+                    <span class="input-group-addon"><a onclick="searchOrdersForRes()"><i class="glyphicon glyphicon-search"><span>搜索</span></i></a></span>
+                    <script type="text/javascript">
+
+                        function onKeyDown(event){
+                            var e = event || window.event || arguments.callee.caller.arguments[0];
+                            if(e && e.keyCode==13){ // enter 键
+                                searchOrdersForRes();
+                            }
+                        }
+                        function help() {
+                            $("#helpModal").modal("show");
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-1 column">
+
+    </div>
+    <div class="col-md-8 column">
+        <table class="table table-hover table-striped" style="border-style: none">
+            <thead style="background: gainsboro; border-style: none">
+            <tr>
+                <th style="font-size: 16px">订单号</th>
+                <th style="font-size: 16px">订单时间</th>
+                <th style="font-size: 16px">会员名</th>
+                <th style="font-size: 16px">订单内容</th>
+                <th style="font-size: 16px">支付金额</th>
+                <th style="font-size: 16px">订单状态</th>
+            </tr>
+            </thead>
+            <tbody id="orderTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<!--<div class="col-sm-3">
     <label for="startTime">开始时间</label>
     <input type="date" class="form-control" id="startTime">
 </div>
@@ -157,8 +233,8 @@
             }
         </script>
     </div>
-</div>
-<div class="container-fluid">
+</div>-->
+<!--<div class="container-fluid">
     <table class="table table-bordered table-hover table-striped">
         <thead>
         <tr>
@@ -181,7 +257,7 @@
         </tr>
         </tbody>
     </table>
-</div>
+</div>-->
 <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
