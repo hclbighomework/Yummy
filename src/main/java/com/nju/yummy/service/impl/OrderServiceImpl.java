@@ -179,4 +179,12 @@ public class OrderServiceImpl implements OrderService {
         Optional<Double> money = orderDAO.getTotalMoneyForManager();
         return money.isPresent() ? money.get() : 0.00;
     }
+
+    @Override
+    public int getSalesByMonth(String rid) {
+        String endTime = DateUtil.getBeforeTimeString(0);
+        String startTime = DateUtil.getBeforeTimeString(-30);
+        Optional<Integer> sales = orderDAO.getSalesByMonthForRestaurant(rid, DateUtil.stringToTimestamp(startTime, "start"), DateUtil.stringToTimestamp(endTime, "end"));
+        return sales.isPresent() ? sales.get() : 0;
+    }
 }
