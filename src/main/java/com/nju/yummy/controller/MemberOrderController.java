@@ -4,6 +4,7 @@ import com.nju.yummy.model.*;
 import com.nju.yummy.service.*;
 import com.nju.yummy.util.DateUtil;
 import com.nju.yummy.util.DeliveryUtil;
+import com.nju.yummy.util.ImageUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -64,6 +65,7 @@ public class MemberOrderController {
             Restaurants restaurants = restaurantService.getRestaurantById(orders.getRid());
             res.put("rName", restaurants.getName());
             res.put("rPhone", restaurants.getPhone());
+            res.put("imgData", ImageUtil.imageToBase64(restaurants.getPicPath()));
             res.put("message", "success");
             res.put("member", members);
         } else {

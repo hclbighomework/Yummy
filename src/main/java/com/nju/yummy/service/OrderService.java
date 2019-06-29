@@ -37,4 +37,6 @@ public interface OrderService {
     public ArrayList<Data> getStatisticsForManager();
 
     public double getManagerTotalIncome();
+
+    public int getSalesByMonth(String rid);
 }
