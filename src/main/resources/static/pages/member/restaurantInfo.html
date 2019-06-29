@@ -44,11 +44,11 @@
             $('#singlePane').html("");
             $.each(singleList, function (i) {
                 var pane=$('#singlePane').html();
-                var singleName=singleList.name;
-                var imgData=singleList.imgData;
-                var singlePrice="￥"+singleList.cost;
-                var singleNum="库存:"+singleList.num;
-                var singleId=singleList.sid;
+                var singleName=singleList[i].name;
+                var imgData=singleList[i].imgData;
+                var singlePrice="￥"+singleList[i].cost;
+                var singleNum="库存:"+singleList[i].num;
+                var singleId=singleList[i].sid;
                 $('#singlePane').html(pane+"<div class=\"food\">\n" +
                     "        <img src=data:image/png;base64'"+imgData+"' class=\"singleImg\">" +
                     "        <label class=\"singleName\" >"+singleName+"</label>\n" +
@@ -72,13 +72,13 @@
 
         function setPackage(packageList){
             $('#setPane').html("");
-            $.each(singleList, function (i) {
+            $.each(packageList, function (i) {
                 var pane=$('#setPane').html();
-                var setName=packageList.name;
-                var imgData=packageList.imgData;
-                var setPrice="￥"+packageList.cost;
-                var setNum="库存:"+packageList.num;
-                var setId=packageList.sid;
+                var setName=packageList[i].name;
+                var imgData=packageList[i].imgData;
+                var setPrice="￥"+packageList[i].cost;
+                var setNum="库存:"+packageList[i].num;
+                var setId=packageList[i].sid;
                 $('#singlePane').html(pane+"<div class=\"food\">\n" +
                     "        <img src=data:image/png;base64'"+imgData+"' class=\"singleImg\">" +
                     "        <label class=\"singleName\" >"+setName+"</label>\n" +
