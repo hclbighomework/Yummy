@@ -107,6 +107,7 @@
             var num="";
             var price="";
             var shopNum="";
+            var price1="";
             if(type=="s"){
                 var nameid="#name1"+id;
                 var priceid="#price1"+id;
@@ -125,12 +126,13 @@
                 var numid="#num2"+id;
                 name=$(nameid).text();
                 price="￥"+$(priceid).text();
+                price1=$(priceid).text();
                 num=$(numid).val();
                 shopNum=num+"份";
                 packageName.push(name);
                 packageNum.push(num);
             }
-            totalPrice=totalPrice+parseFloat($(priceid).text());
+            totalPrice=totalPrice+parseFloat(price1);
             for (var i = 0; i < reductionList1.length - 1; i++) {
                 if (totalPrice >= reductionList1[i].fullCost && totalPrice < reductionList1[i + 1].fullCost) {
                     totalPrice = totalPrice - reductionList1[i].reduceCost;
