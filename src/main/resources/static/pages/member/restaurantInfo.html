@@ -130,7 +130,7 @@
                 packageName.push(name);
                 packageNum.push(num);
             }
-            totalPrice=totalPrice+parseFloat(price);
+            totalPrice=totalPrice+parseFloat($(priceid).text());
             for (var i = 0; i < reductionList1.length - 1; i++) {
                 if (totalPrice >= reductionList1[i].fullCost && totalPrice < reductionList1[i + 1].fullCost) {
                     totalPrice = totalPrice - reductionList1[i].reduceCost;
