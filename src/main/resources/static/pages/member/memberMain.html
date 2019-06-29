@@ -38,7 +38,7 @@
                     dataType: 'json',
                     success: function (data) {
                         console.log(data);
-                        setTable(data.resList);
+                        setRes(data.resList);
                     }
                 }
             );
@@ -69,12 +69,13 @@
                 var resId=resList[i].rid;
                 var sales="月销量："+resList[i].sales;
                 var humanCost="配送费：￥"+resList[i].humanCost;
-                var resDiscount=resList[i].discount;
+                var resDiscount=resList[i].reductionString;
                 var resAddress=resList[i].addressByAid;
+                var resImg=resList.imgData;
                 var resType=resList[i].type;
-                $('.allRes').html(pane+"div class=\"restaurant\" id='"+resId+"'>\n" +
+                $('.allRes').html(pane+"<div class=\"restaurant\" onclick='getI(this)' id='"+resId+"'>\n" +
                     "        <div class=\"imgAndId\">\n" +
-                    "            <img src=\"../../image/restaurant_icon/Mcc.jpg\" class=\"resImage\">\n" +
+                    "            <img src='data:image/png;base64,"+resImg+"' class=\"resImage\">\n" +
                     "        </div>\n" +
                     "        <div class=\"info\">\n" +
                     "            <label class=\"resName\">"+resName+"</label>\n" +
@@ -89,45 +90,10 @@
             })
         }
 
-        function setTable(resList) {
-            var str = "";
-            $.each(resList, function (i) {
-                var cont = 0;
-                str += "<table class='table table-bordered table-hover table-striped'>" +
-                    "<tr><th colspan='4' style='font-size: 16px' data-toggle='tooltip' title='单击进入店铺页面'>" +
-                    resList[i].name +
-                    "</th></tr>";
-                $.each(resList[i].singlesByRid, function (j) {
-                    if (cont > 4) {
-                        return true;
-                    }
-                    cont++;
-                    str += "<tr><td>" + resList[i].singlesByRid[j].name + "</td><td>" +
-                        resList[i].singlesByRid[j].type + "</td><td>" +
-                        resList[i].singlesByRid[j].cost + "元</td><td>" +
-                        resList[i].singlesByRid[j].num + "份</td></tr>"
-                });
-                $.each(resList[i].packagesByRid, function (j) {
-                    if (cont > 4) {
-                        return true;
-                    }
-                    cont++;
-                    str += "<tr><td>" + resList[i].packagesByRid[j].name + "</td><td>" +
-                        resList[i].packagesByRid[j].type + "</td><td>" +
-                        resList[i].packagesByRid[j].name + "元</td><td>" +
-                        resList[i].packagesByRid[j].num + "份</td></tr>"
-                });
-                if (cont >=  4) {
-                    str += "<tr><td colspan='4'>更多餐点请点击进入店铺首页查看</td></tr>"
-                }
-                str += "</table>"
-            });
-            $("#search_res").html(str);
-            $("#search_res th").click(function () {
-                window.location.href = "/member_shopping?restaurant=" + this.innerHTML;
-            });
+        function getI(element){
+            var id=element.id;
+            window.location.href="/member_shopping?id="+id;
         }
-
     </script>
 </head>
 <body>
