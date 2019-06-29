@@ -70,8 +70,8 @@
                 var sales="月销量："+resList[i].sales;
                 var humanCost="配送费：￥"+resList[i].humanCost;
                 var resDiscount=resList[i].reductionString;
-                var resAddress=resList[i].addressByAid;
-                var resImg=resList.imgData;
+                var resAddress=resList[i].addressByAid.description;
+                var resImg=resList[i].imgData;
                 var resType=resList[i].type;
                 $('.allRes').html(pane+"<div class=\"restaurant\" onclick='getI(this)' id='"+resId+"'>\n" +
                     "        <div class=\"imgAndId\">\n" +
