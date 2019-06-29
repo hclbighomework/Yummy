@@ -78,6 +78,10 @@ public class ShoppingController {
         String rid = map.get("rid").toString();
         String sortType = map.get("sort").toString();
         Map<String, Object> res = new HashMap<>();
+        ArrayList<Singles> singles = singleService.getSortedValidSinglesForRid(rid, sortType);
+        for (Singles single : singles) {
+            single.setImgData(ImageUtil.imageToBase64(single.getPicPath()));
+        }
         res.put("singleList", singleService.getSortedValidSinglesForRid(rid, sortType));
         return res;
     }
@@ -88,7 +92,11 @@ public class ShoppingController {
         String rid = map.get("rid").toString();
         String sortType = map.get("sort").toString();
         Map<String, Object> res = new HashMap<>();
-        res.put("packageList", packageService.getSortedValidPackagesForRid(rid, sortType));
+        ArrayList<Packages> packages = packageService.getSortedValidPackagesForRid(rid, sortType);
+        for (Packages aPackage : packages) {
+            aPackage.setImgData(ImageUtil.imageToBase64(aPackage.getPicPath()));
+        }
+        res.put("packageList", packages);
         return res;
     }
 

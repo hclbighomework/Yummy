@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 @RestController
@@ -48,7 +45,23 @@ public class MemberController {
             res.put("message", "success");
             res.put("username", members.getName());
             Iterable<Restaurants> restaurants = restaurantService.getApprovedRestaurants();
-            res.put("resList", restaurants);
+            Iterator<Restaurants> iterator = restaurants.iterator();
+            ArrayList<Restaurants> resList = new ArrayList<>();
+            while (iterator.hasNext()) {
+                Restaurants restaurant = iterator.next();
+                restaurant.setImgData(ImageUtil.imageToBase64(restaurant.getPicPath()));
+                restaurant.setSales(orderService.getSalesByMonth(restaurant.getRid()));
+                ArrayList<Reduction> reductions = reductionService.getSortedReductionByRid(restaurant.getRid());
+                if (reductions == null || reductions.size() == 0) {
+                    restaurant.setReductionString("暂无满减优惠");
+                } else {
+                    restaurant.setReductionString("满" + reductions.get(0).getFullCost() + "减" + reductions.get(0).getReduceCost());
+                }
+                resList.add(restaurant);
+                //System.out.println(resList.get(0).getReductionString());
+            }
+            //System.out.println(resList.size());
+            res.put("resList", resList);
         } else {
             res.put("message", "error");
         }
@@ -65,16 +78,24 @@ public class MemberController {
         } else {
             restaurants = restaurantService.getRestaurantByType(type);
         }
-        for (Restaurants restaurant : restaurants) {
+        Iterator<Restaurants> iterator = restaurants.iterator();
+        ArrayList<Restaurants> resList = new ArrayList<>();
+        while (iterator.hasNext()) {
+            Restaurants restaurant = iterator.next();
             restaurant.setImgData(ImageUtil.imageToBase64(restaurant.getPicPath()));
             restaurant.setSales(orderService.getSalesByMonth(restaurant.getRid()));
             ArrayList<Reduction> reductions = reductionService.getSortedReductionByRid(restaurant.getRid());
             if (reductions == null || reductions.size() == 0) {
-
+                restaurant.setReductionString("暂无满减优惠");
+            } else {
+                restaurant.setReductionString("满" + reductions.get(0).getFullCost() + "减" + reductions.get(0).getReduceCost());
             }
+            resList.add(restaurant);
+            //System.out.println(resList.get(0).getReductionString());
         }
         Map<String, Object> res = new HashMap<>();
-        res.put("resList", restaurants);
+        //System.out.println(resList.size());
+        res.put("resList", resList);
         return res;
     }
 
@@ -85,6 +106,12 @@ public class MemberController {
         ArrayList<Restaurants> restaurants = restaurantService.getByNameKey(name);
         for (Restaurants restaurant : restaurants) {
             restaurant.setImgData(ImageUtil.imageToBase64(restaurant.getPicPath()));
+            ArrayList<Reduction> reductions = reductionService.getSortedReductionByRid(restaurant.getRid());
+            if (reductions == null || reductions.size() == 0) {
+                restaurant.setReductionString("暂无满减优惠");
+            } else {
+                restaurant.setReductionString("满" + reductions.get(0).getFullCost() + "减" + reductions.get(0).getReduceCost());
+            }
         }
         /*Map<String, ArrayList<Singles>> singleMap = new HashMap<>();
         for (Restaurants restaurant : restaurants) {
