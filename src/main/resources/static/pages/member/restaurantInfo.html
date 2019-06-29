@@ -17,6 +17,7 @@
         var packageNum = [];
         var url=window.location.search;
         var rid=url.substr(url.indexOf('=')+1);
+
         window.onload=function () {
             $.ajax({
                 url:'/getShoppingInfo',
@@ -25,6 +26,7 @@
                 data:{rid:rid},
                 async:'true',
                 success:function (data) {
+                    $('#shoppingCar').html("");
                     $('#resName').text(data.restaurant.name);
                     $('#resNotice').text(data.restaurant.description);
                     var resImgData="data:image/png;base64,"+data.restaurant.imgData;
@@ -92,8 +94,42 @@
         }
 
         function getId(element){
-            var id=element.id;
+            var shopPane=$("#shoppingCar").html();
+            var fid=element.id;
+            var type=fid.substr(0,1);
+            var id=fid.substr(1);
+            var name="";
+            var num="";
+            var price="";
+            var shopNum="";
+            if(type=="s"){
+                var nameid="#name1"+id;
+                var priceid="#price1"+id;
+                var numid="#num1"+id;
+                name=$(nameid).text();
+                price=$(priceid).text();
+                num=$(numid).val();
+                shopNum=num+"份";
+                singleName.push(name);
+                singleNum.push(num);
 
+            }
+            else {
+                var nameid="#name2"+id;
+                var priceid="#price2"+id;
+                var numid="#num2"+id;
+                name=$(nameid).text();
+                price="￥"+$(priceid).text();
+                num=$(numid).val();
+                shopNum=num+"份";
+                packageName.push(name);
+                packageNum.push(num);
+            }
+            $('#shoppingCar').html(shopPane+"<div class=\"orderedFood\">\n" +
+                "                <label class=\"shoppingName\">"+name+"</label>\n" +
+                "                <label class=\"shopNum\">"+shopNum+"</label>\n" +
+                "                <label class=\"shoppingPrice\">"+price+"</label>\n" +
+                "            </div>");
         }
 
 
@@ -110,41 +146,7 @@
 
 
 
-        function setSingleTable(singleList) {
-            var str = "";
-            $.each(singleList, function (i) {
-                str += "<tr><td>" + singleList[i].name + "</td><td>" + singleList[i].cost +
-                    "</td><td>" + singleList[i].type + "</td><td>" +
-                    singleList[i].discount + "</td><td>" +
-                    singleList[i].num + "</td><td>" +
-                    "<input type='number' class='form-control' style='border: none;overflow: hidden;height: 100%;width: 100%;' min='0' max='" +
-                    singleList[i].num + "' value='0'></td></tr>"
-            });
-            $("#singleTable").html(str);
-        }
 
-        function setPackageTable(packageList) {
-            var str = "";
-            $.each(packageList, function (i) {
-                str += "<tr><td>" + packageList[i].name + "</td><td>" + packageList[i].cost +
-                    "</td><td>" + packageList[i].type + "</td><td>" +
-                    packageList[i].discount + "</td><td>" +
-                    packageList[i].num + "</td><td>" +
-                    "<input type='number' class='form-control' style='border: none;overflow: hidden;height: 100%;width: 100%;' min='0' max='" +
-                    packageList[i].num + "' value='0'></td></tr>"
-            });
-            $("#packageTable").html(str);
-            $("#packageTable td").click(function () {
-                var index = $(this).parents("tr").find("td").index($(this));
-                if (index < 5) {
-                    var pName = $(this).closest("tr").find("td").eq(0).html();
-                    console.log(pName);
-                    showPackage(pName);
-                    $("#packageInfoModal").modal("show");
-                }
-
-            });
-        }
         
         function showPackage(pName) {
             $.ajax({
@@ -171,7 +173,7 @@
                     type: "post",
                     async: true,
                     url: "/singleSorted",
-                    data: {rName: rName, sort:type},
+                    data: {rid: rid, sort:type},
                     dataType: 'json',
                     success: function (data) {
                         console.log(data);
@@ -186,7 +188,7 @@
                     type: "post",
                     async: true,
                     url: "/packageSorted",
-                    data: {rName: rName, sort:type},
+                    data: {rid: rid, sort:type},
                     dataType: 'json',
                     success: function (data) {
                         console.log(data);
@@ -487,14 +489,21 @@
         font-size: 14px;
         font-weight: bold;
         margin-left: 10px;
-        width: 60%;
+        width: 46%;
     }
 
     .shoppingPrice{
         font-size: 14px;
         font-weight: bold;
         margin-left: 5px;
-        width: 30%;
+        width: 20%;
+    }
+
+    .shopNum{
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 5px;
+        width: 22%;
     }
 
 </style>
@@ -610,7 +619,11 @@
      padding: 0px 0px 0px 0px">
         <div class="card-body" id="shoppingCar">
 
-            <div class="orderedFood"> </div>
+            <div class="orderedFood">
+                <label class="shoppingName">汉堡</label>
+                <label class="shopNum">2份</label>
+                <label class="shoppingPrice">￥20.0</label>
+            </div>
             <div class="orderedFood"> </div>
             <div class="orderedFood"> </div>
 
