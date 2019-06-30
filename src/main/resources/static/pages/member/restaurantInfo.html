@@ -233,7 +233,7 @@
 
         function packageSorted(type) {
             initPackageButton();
-            $("#p" + type).remove("btn-default").addClass("btn-primary");
+            $("#p" + type).removeClass("btn-default").addClass("btn-primary");
             $.ajax({
                     type: "post",
                     async: true,

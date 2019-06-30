@@ -249,29 +249,30 @@
             reader.onload = function (e) {
                 console.log("成功读取....");
                 $("#pic").attr('src', e.target.result);
+                var data=$("#pic").attr('src');
+                data = data.substr(data.indexOf(",") + 1);
+                console.log(data);
+                $.ajax({
+                    type: "post",
+                    async: true,
+                    url: "/uploadrespic",
+                    data: {imgData:data},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        switch (data.message) {
+                            case 'error':
+                                window.location.href = '/login';
+                                break;
+                            case 'success':
+                                alert("更改头像成功");
+                        }
+                    }
+                });
             };
 
             reader.readAsDataURL(file);
-            var data=$("#pic").attr('src');
-            data = data.substr(data.indexOf(",") + 1);
-            console.log(data);
-            $.ajax({
-                type: "post",
-                async: true,
-                url: "/uploadrespic",
-                data: {imgData:data},
-                dataType: 'json',
-                success: function (data) {
-                    console.log(data);
-                    switch (data.message) {
-                        case 'error':
-                            window.location.href = '/login';
-                            break;
-                        case 'success':
-                            alert("更改头像成功");
-                    }
-                }
-            });
+
         }
 
     </script>
