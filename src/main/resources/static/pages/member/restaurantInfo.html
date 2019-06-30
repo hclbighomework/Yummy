@@ -96,10 +96,10 @@
                 var imgData=packageList[i].imgData;
                 var setPrice="￥"+packageList[i].cost;
                 var setNum="库存:"+packageList[i].num;
-                var setId=packageList[i].sid;
+                var setId=packageList[i].pid;
                 $('#setPane').html(setPane+"<div class=\"food\" id='div"+setId+"' title=\"Popover title\"\n" +
                     "             data-container=\"body\" data-toggle=\"popover\" data-placement=\"top\"\n" +
-                    "             data-content=\"顶部的 Popover 中的一些内容\" id=\"test\" onclick=\"packageContent(this)\">\n" +
+                    "             data-content=\"顶部的 Popover 中的一些内容\" onclick=\"packageContent(this)\">\n" +
                     "        <img src='data:image/png;base64,"+imgData+"' class=\"singleImg\">" +
                     "        <label class=\"singleName\" id='name2"+setId+"'>"+setName+"</label>\n" +
                     "        <label class=\"singlePrice\" id='price2"+setId+"'>"+setPrice+"</label>\n" +
@@ -482,16 +482,16 @@
     .singleName{
         margin-top: 25px;
         margin-left: 50px;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: bold;
-        width: 15%;
+        width: 25%;
         height: 35px;
     }
 
     .singlePrice{
         margin-top: 20px;
         margin-left: 10px;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: bold;
         width: 15%;
         height: 35px;
@@ -500,9 +500,9 @@
     .singleNum{
         margin-top: 20px;
         margin-left: 10px;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: bold;
-        width: 17%;
+        width: 15%;
         height: 35px;
     }
 
