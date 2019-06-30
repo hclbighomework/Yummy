@@ -9,7 +9,7 @@
     <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
     <script>
-        var rName = "";
+        var restaurant = new Object();
         var singleName = [];
         var singleNum = [];
         var packageName= [];
@@ -27,7 +27,7 @@
                 method:'post',
                 dataType:'json',
                 data:{rid:rid},
-                async:'true',
+                async:false,
                 success:function (data) {
                     switch (data.message) {
                         case 'error':
@@ -35,20 +35,18 @@
                             break;
                         case 'success':
                             $(document).attr('title', data.restaurant.name + "——Yummy");
+
+                            reductionList1=data.restaurant.reductionsByRid;
                             humanCost = data.restaurant.humanCost;
                             minCost = data.restaurant.minCost;
-                            reductionList1=data.restaurant.reductionsByRid;
-                            var totalPrice1="总价：0元";
-                            $('#totalPrice').text(totalPrice1);
+                            restaurant = data.restaurant;
+                            $('#totalPrice').text("总价：0元");
                             $('#shoppingCar').html("");
                             $('#resName').text(data.restaurant.name);
                             $('#resNotice').text(data.restaurant.description);
-                            var resImgData="data:image/png;base64,"+data.restaurant.imgData;
-                            $('#resImg').attr('src',resImgData);
-                            var minCost=data.restaurant.minCost+"元";
-                            $('#minCost').text(minCost);
-                            var humanCost= data.restaurant.humanCost+"元";
-                            $('#humanCost').text(humanCost);
+                            $('#resImg').attr('src', "data:image/png;base64,"+data.restaurant.imgData);
+                            $('#minCost').text(data.restaurant.minCost + "元");
+                            $('#humanCost').text(data.restaurant.humanCost + "元");
                             setSingle(data.restaurant.singlesByRid);
                             setPackage(data.restaurant.packagesByRid);
                             setReduction(data.restaurant.reductionsByRid);
@@ -97,9 +95,9 @@
                 var setPrice="￥"+packageList[i].cost;
                 var setNum="库存:"+packageList[i].num;
                 var setId=packageList[i].pid;
-                $('#setPane').html(setPane+"<div class=\"food\" id='div"+setId+"' title=\"Popover title\"\n" +
+                $('#setPane').html(setPane+"<div class=\"food\" id='div"+setId+"' title=\"套餐内容\"\n" +
                     "             data-container=\"body\" data-toggle=\"popover\" data-placement=\"top\"\n" +
-                    "             data-content=\"顶部的 Popover 中的一些内容\" onclick=\"packageContent(this)\">\n" +
+                    "             data-content=\"套餐详情：\" onclick=\"packageContent(this)\">\n" +
                     "        <img src='data:image/png;base64,"+imgData+"' class=\"singleImg\">" +
                     "        <label class=\"singleName\" id='name2"+setId+"'>"+setName+"</label>\n" +
                     "        <label class=\"singlePrice\" id='price2"+setId+"'>"+setPrice+"</label>\n" +
@@ -162,10 +160,11 @@
                 if (totalPrice >= reductionList1[reductionList1.length - 1].fullCost) {
                     totalPrice = totalPrice - parseFloat(reductionList1[reductionList1.length - 1].reduceCost);
                 }
-                totalPrice += parseFloat(humanCost);
-                console.log(humanCost);
-                console.log(totalPrice);
-                var totalPriceL = "总价：" + totalPrice + "元";
+                var tmpPrice = totalPrice + parseFloat(humanCost);
+                if (tmpPrice >= minCost) {
+                    $("#payButton").attr('disabled', false);
+                }
+                var totalPriceL = "总价：" + tmpPrice + "元";
                 $('#shoppingCar').html(shopPane + "<div class=\"orderedFood\">\n" +
                     "                <label class=\"shoppingName\">" + name + "</label>\n" +
                     "                <label class=\"shopNum\">" + shopNum + "</label>\n" +
@@ -184,14 +183,16 @@
                 url:'/getPackageInfo',
                 type:'post',
                 success:function (data) {
-                    $(pid).attr('data-content',data.packageString);
+                    console.log(data);
+                    $("#packageInfo").text(data.packageInfo);
+                    $("#packageInfoModal").modal("show");
                 }
             })
         }
 
 
         $(function() {
-            $("[data-toggle='popover']").popover({
+            $("[data-toggle='resInfo']").popover({
                 html : true,
                 title: "商家信息",
                 delay:{show:500, hide:1000},
@@ -201,13 +202,21 @@
             });
         });
 
+        function initSingleButton() {
+            $("#sasc").removeClass("btn-primary").addClass("btn-default");
+            $("#sdesc").removeClass("btn-primary").addClass("btn-default");
+            $("#sdefault").removeClass("btn-primary").addClass("btn-default");
+        }
 
-
-
-
-
+        function initPackageButton() {
+            $("#pasc").removeClass("btn-primary").addClass("btn-default");
+            $("#pdesc").removeClass("btn-primary").addClass("btn-default");
+            $("#pdefault").removeClass("btn-primary").addClass("btn-default");
+        }
 
         function singleSorted(type) {
+            initSingleButton();
+            $("#s" + type).removeClass("btn-default").addClass("btn-primary");
             $.ajax({
                     type: "post",
                     async: true,
@@ -223,6 +232,8 @@
         }
 
         function packageSorted(type) {
+            initPackageButton();
+            $("#p" + type).remove("btn-default").addClass("btn-primary");
             $.ajax({
                     type: "post",
                     async: true,
@@ -482,27 +493,27 @@
     .singleName{
         margin-top: 25px;
         margin-left: 50px;
-        font-size: 17px;
+        font-size: 16px;
         font-weight: bold;
-        width: 25%;
+        width: 24%;
         height: 35px;
     }
 
     .singlePrice{
         margin-top: 20px;
         margin-left: 10px;
-        font-size: 17px;
+        font-size: 16px;
         font-weight: bold;
-        width: 15%;
+        width: 14%;
         height: 35px;
     }
 
     .singleNum{
         margin-top: 20px;
         margin-left: 10px;
-        font-size: 17px;
+        font-size: 16px;
         font-weight: bold;
-        width: 15%;
+        width: 14%;
         height: 35px;
     }
 
@@ -524,7 +535,7 @@
     }
 
     .shoppingNum{
-        width: 15%;
+        width: 10%;
         height: 35px;
         margin-top: 15px;
         margin-left: 10px;
@@ -581,17 +592,17 @@
     </div>
 </nav>
 <div class="background">
-    <img class="img-circle" id="resImg" src="../../image/restaurant_icon/Mcc.jpg" style="border-radius: 50%;
-    position: relative; top:20px; left:200px;" width="100px" height="100px">
-    <label style="font-size: 20px;   font-weight: bold; position: absolute; top:100px; left:360px;" id="resName">麦当劳餐厅</label>
-    <label style="font-size: 16px;   font-weight: bold; position: absolute; top:140px; left:360px;" id="resType">快餐便当</label>
+    <img class="img-circle" id="resImg" src="" style="border-radius: 50%;
+    position: relative; top:20px; left:200px;" width="100px" height="100px" >
+    <label style="font-size: 20px;   font-weight: bold; position: absolute; top:100px; left:360px;" id="resName"></label>
+    <label style="font-size: 16px;   font-weight: bold; position: absolute; top:140px; left:360px;" id="resType"></label>
     <label style="font-size: 14px;  width:80px;font-weight: bold; position: absolute; top:110px; left:950px;">起送价</label>
     <label style="font-size: 14px; width:80px;font-weight: bold; position: absolute; top:110px; left:1085px;">配送费</label>
 
     <label style="font-size: 17px; width:80px;font-weight: bold; position: absolute; top:150px; left:950px;"
-           id="minCost">20元</label>
+           id="minCost"></label>
     <label style="font-size: 17px; width:80px;font-weight: bold; position: absolute; top:150px; left:1085px;"
-           id="humanCost">配送费￥5</label>
+           id="humanCost"></label>
 
 </div>
 
@@ -600,58 +611,27 @@
     <div class="orderPane2">
         <label style="width: 70%; font-size: 20px; font-weight: bold;">单品</label>
         <div class="btn-group" style="color: #111111" >
-            <button type="button" class="btn btn-default" onclick="singleSorted('asc')">价格↑</button>
-            <button type="button" class="btn btn-default" onclick="singleSorted('desc')">价格↓</button>
-            <button type="button" class="btn btn-default" onclick="singleSorted('default')">默认排序</button>
+            <button type="button" class="btn btn-default" id="sasc" onclick="singleSorted('asc')">价格↑</button>
+            <button type="button" class="btn btn-default" id="sdesc" onclick="singleSorted('desc')">价格↓</button>
+            <button type="button" class="btn btn-default" id="sdefault" onclick="singleSorted('default')">默认排序</button>
         </div>
     </div>
     <div class="orderPane" id="singlePane">
-
-
-        <div class="food">
-            <img src="../../image/restaurant_icon/Mcc.jpg" class="singleImg">
-            <label class="singleName" >汉堡</label>
-            <label class="singlePrice" >￥20.0</label>
-            <label class="singleNum" >库存：20</label>
-            <input type="text" class="shoppingNum">
-            <button class="btn btn-primary singleButton" id="singleButton">加入购物车</button>
-        </div>
-        <div class="food">
-
-        </div>
-        <div class="food"></div>
-        <div class="food"></div>
-        <div class="food"></div>
-        <div class="food"></div>
-
-
-
     </div>
     <div class="orderPane3">
         <label style="width: 70%; font-size: 20px; font-weight: bold;">套餐</label>
         <div class="btn-group" style="color: #111111" >
-            <button type="button" class="btn btn-default" onclick="packageSorted('asc')">价格↑</button>
-            <button type="button" class="btn btn-default" onclick="packageSorted('desc')" >价格↓</button>
-            <button type="button" class="btn btn-default" onclick="packageSorted('default')">默认排序</button>
+            <button type="button" class="btn btn-default" id="pasc" onclick="packageSorted('asc')">价格↑</button>
+            <button type="button" class="btn btn-default" id="pdesc" onclick="packageSorted('desc')" >价格↓</button>
+            <button type="button" class="btn btn-default" id="pdefault" onclick="packageSorted('default')">默认排序</button>
         </div>
     </div>
     <div class="orderPane1" id="setPane">
-
-        <div class="food" title="Popover title"
-             data-container="body" data-toggle="popover" data-placement="top"
-             data-content="顶部的 Popover 中的一些内容" id="test" onclick="f()">
-            <img src="../../image/restaurant_icon/Mcc.jpg" class="singleImg">
-            <label class="singleName" >汉堡</label>
-            <label class="singlePrice" >￥20.0</label>
-            <label class="singleNum" >库存：20</label>
-            <input type="text" class="shoppingNum">
-            <button class="btn btn-primary singleButton" >加入购物车</button>
-        </div>
     </div>
 </div>
 
 <div class="noticeT"><label style="font-weight: bold; font-size: 16px; color: white">商 家 公 告</label></div>
-<div class="notice"><p style="font-size: 15px" id="resNotice">兄弟萌，现在商家酬宾大减价，快来抢抢抢！满45减20，你买不了吃亏买不了上当</p></div>
+<div class="notice"><p style="font-size: 15px" id="resNotice"></p></div>
 
 <div class="discountT"><label style="font-weight: bold; font-size: 16px; color: white">满 减 优 惠</label></div>
 <div class="discount" id="resDiscount"><p style="font-size: 15px" >满45减20</p></div>
@@ -665,20 +645,35 @@
     <div id="collapseOne" class="collapse show" data-parent="#accordion"  style="width: 300px; height: auto;
      padding: 0px 0px 0px 0px">
         <div class="card-body" id="shoppingCar">
-
-            <div class="orderedFood">
-                <label class="shoppingName">汉堡</label>
-                <label class="shopNum">2份</label>
-                <label class="shoppingPrice">￥20.0</label>
-            </div>
-            <div class="orderedFood"> </div>
-            <div class="orderedFood"> </div>
         </div>
     </div>
     <div class="price" ><label style="margin-left: 50px ; margin-top:10px;font-size: 18px; font-weight: bold;
-    color: white" id="totalPrice" >总价：200元</label></div>
+    color: white" id="totalPrice" ></label></div>
     <button type="button" class="btn btn-primary" style="height: 40px;  width: 100px; position: fixed; bottom: 1px; right: 1px;"
-            id="payButton" onclick="setOrder()">支 付</button>
+            id="payButton" onclick="setOrder()" disabled>支 付</button>
+</div>
+
+<div class="modal fade" id="packageInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" style="text-align: center;font-weight: bold;font-size: 20px">
+                    套餐内容
+                </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="packageInfo"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    关闭
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
 </div>
 
 

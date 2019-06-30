@@ -107,7 +107,7 @@ public class ShoppingController {
         int pid = Integer.parseInt(map.get("pid").toString());
         Packages packages = packageService.getPackageByID(pid);
         StringBuilder sb = new StringBuilder("套餐详情：");
-        ArrayList<Singles> singles = (ArrayList<Singles>) packages.getSinglesCollection();
+        ArrayList<Singles> singles = new ArrayList<>(packages.getSinglesCollection());
         for (int i = 0; i < singles.size() - 1; i++) {
             sb.append(singles.get(i).getName()).append("*").append(packageSingleService.getPackageSingle(pid, singles.get(i).getSid()).getNum()).append(",");
         }
