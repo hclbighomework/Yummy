@@ -97,7 +97,9 @@
                 var setPrice="￥"+packageList[i].cost;
                 var setNum="库存:"+packageList[i].num;
                 var setId=packageList[i].sid;
-                $('#setPane').html(setPane+"<div class=\"food\">\n" +
+                $('#setPane').html(setPane+"<div class=\"food\" id='div"+setId+"' title=\"Popover title\"\n" +
+                    "             data-container=\"body\" data-toggle=\"popover\" data-placement=\"top\"\n" +
+                    "             data-content=\"顶部的 Popover 中的一些内容\" id=\"test\" onclick=\"packageContent(this)\">\n" +
                     "        <img src='data:image/png;base64,"+imgData+"' class=\"singleImg\">" +
                     "        <label class=\"singleName\" id='name2"+setId+"'>"+setName+"</label>\n" +
                     "        <label class=\"singlePrice\" id='price2"+setId+"'>"+setPrice+"</label>\n" +
@@ -145,27 +147,46 @@
                 packageName.push(name);
                 packageNum.push(num);
             }
-            totalPrice=totalPrice+parseFloat(price1);
-            for (var i = 0; i < reductionList1.length - 1; i++) {
-                if (totalPrice >= reductionList1[i].fullCost && totalPrice < reductionList1[i + 1].fullCost) {
-                    totalPrice = totalPrice - parseFloat(reductionList1[i].reduceCost);
-                    console.log(totalPrice);
-                    break;
+            if(num==""||parseInt(num)<=0){
+                alert("购买数量不能为空或小于1");
+            }
+            else {
+                totalPrice = totalPrice + parseFloat(price1);
+                for (var i = 0; i < reductionList1.length - 1; i++) {
+                    if (totalPrice >= reductionList1[i].fullCost && totalPrice < reductionList1[i + 1].fullCost) {
+                        totalPrice = totalPrice - parseFloat(reductionList1[i].reduceCost);
+                        console.log(totalPrice);
+                        break;
+                    }
                 }
+                if (totalPrice >= reductionList1[reductionList1.length - 1].fullCost) {
+                    totalPrice = totalPrice - parseFloat(reductionList1[reductionList1.length - 1].reduceCost);
+                }
+                totalPrice += parseFloat(humanCost);
+                console.log(humanCost);
+                console.log(totalPrice);
+                var totalPriceL = "总价：" + totalPrice + "元";
+                $('#shoppingCar').html(shopPane + "<div class=\"orderedFood\">\n" +
+                    "                <label class=\"shoppingName\">" + name + "</label>\n" +
+                    "                <label class=\"shopNum\">" + shopNum + "</label>\n" +
+                    "                <label class=\"shoppingPrice\">" + price + "</label>\n" +
+                    "            </div>");
+                $('#totalPrice').text(totalPriceL)
             }
-            if (totalPrice >= reductionList1[reductionList1.length - 1].fullCost) {
-                totalPrice = totalPrice - parseFloat(reductionList1[reductionList1.length - 1].reduceCost);
-            }
-            totalPrice += parseFloat(humanCost);
-            console.log(humanCost);
-            console.log(totalPrice);
-            var totalPriceL="总价："+totalPrice+"元";
-            $('#shoppingCar').html(shopPane+"<div class=\"orderedFood\">\n" +
-                "                <label class=\"shoppingName\">"+name+"</label>\n" +
-                "                <label class=\"shopNum\">"+shopNum+"</label>\n" +
-                "                <label class=\"shoppingPrice\">"+price+"</label>\n" +
-                "            </div>");
-            $('#totalPrice').text(totalPriceL)
+        }
+
+        function packageContent(element){
+            var id=element.id;
+            var pid=id.substr(3);
+            $.ajax({
+                dataType:'json',
+                data:{rid:rid,pid:pid},
+                url:'/getPackageInfo',
+                type:'post',
+                success:function (data) {
+                    $(pid).attr('data-content',data.packageString);
+                }
+            })
         }
 
 
@@ -183,26 +204,8 @@
 
 
 
-        
-        function showPackage(pName) {
-            $.ajax({
-                    type: "post",
-                    async: true,
-                    url: "/getPackageInfo",
-                    data: {rName: rName, pName: pName},
-                    dataType: 'json',
-                    success: function (data) {
-                        console.log(data);
-                        var str = "";
-                        $.each(data.packageInfo.singlesCollection, function (i) {
-                           str += "<tr><td>" + data.packageInfo.singlesCollection[i].name +
-                               "</td><td>" + data.packageInfo.singlesCollection[i].packageNum + "</td></tr>";
-                        });
-                        $("#packageInfoTable").html(str);
-                    }
-                }
-            );
-        }
+
+
 
         function singleSorted(type) {
             $.ajax({
@@ -250,20 +253,20 @@
             var money = 0;
             var str = "";
             $("#singleTable tr").each(function () {
-               var td = $(this).find("td");
-               var name = td.eq(0).html();
-               var cost = td.eq(1).html();
-               var discount = td.eq(3).html();
-               var num = td.eq(4).html();
-               var input = td.eq(5).find("input").val();
-               if (input > 0 && input <= parseInt(num)) {
-                   singleName.push(name);
-                   singleNum.push(input);
-                   str += "<tr><td>" + name + "</td><td>" + cost +
-                       "</td><td>" + discount +
-                       "</td><td>" + input + "</td></tr>";
-                   money += cost * discount * input * 0.01;
-               }
+                var td = $(this).find("td");
+                var name = td.eq(0).html();
+                var cost = td.eq(1).html();
+                var discount = td.eq(3).html();
+                var num = td.eq(4).html();
+                var input = td.eq(5).find("input").val();
+                if (input > 0 && input <= parseInt(num)) {
+                    singleName.push(name);
+                    singleNum.push(input);
+                    str += "<tr><td>" + name + "</td><td>" + cost +
+                        "</td><td>" + discount +
+                        "</td><td>" + input + "</td></tr>";
+                    money += cost * discount * input * 0.01;
+                }
             });
             $("#packageTable tr").each(function () {
                 var td = $(this).find("td");
@@ -304,7 +307,7 @@
         function setOrder() {
             console.log(singleName);
 
-            var cost = $("#totalMoney").html();
+            var cost = totalPrice;
             console.log(cost);
             $.ajax({
                     type: "post",
@@ -326,6 +329,12 @@
                 }
             );
         }
+
+        $(function (){
+            $("[data-toggle='popover']").popover();
+        });
+
+
     </script>
 </head>
 <body>
@@ -580,9 +589,9 @@
     <label style="font-size: 14px; width:80px;font-weight: bold; position: absolute; top:110px; left:1085px;">配送费</label>
 
     <label style="font-size: 17px; width:80px;font-weight: bold; position: absolute; top:150px; left:950px;"
-    id="minCost">20元</label>
+           id="minCost">20元</label>
     <label style="font-size: 17px; width:80px;font-weight: bold; position: absolute; top:150px; left:1085px;"
-    id="humanCost">配送费￥5</label>
+           id="humanCost">配送费￥5</label>
 
 </div>
 
@@ -596,28 +605,28 @@
             <button type="button" class="btn btn-default" onclick="singleSorted('default')">默认排序</button>
         </div>
     </div>
-<div class="orderPane" id="singlePane">
+    <div class="orderPane" id="singlePane">
 
 
-    <div class="food">
-        <img src="../../image/restaurant_icon/Mcc.jpg" class="singleImg">
-        <label class="singleName" >汉堡</label>
-        <label class="singlePrice" >￥20.0</label>
-        <label class="singleNum" >库存：20</label>
-        <input type="text" class="shoppingNum">
-        <button class="btn btn-primary singleButton" id="singleButton">加入购物车</button>
+        <div class="food">
+            <img src="../../image/restaurant_icon/Mcc.jpg" class="singleImg">
+            <label class="singleName" >汉堡</label>
+            <label class="singlePrice" >￥20.0</label>
+            <label class="singleNum" >库存：20</label>
+            <input type="text" class="shoppingNum">
+            <button class="btn btn-primary singleButton" id="singleButton">加入购物车</button>
+        </div>
+        <div class="food">
+
+        </div>
+        <div class="food"></div>
+        <div class="food"></div>
+        <div class="food"></div>
+        <div class="food"></div>
+
+
+
     </div>
-    <div class="food">
-
-    </div>
-    <div class="food"></div>
-    <div class="food"></div>
-    <div class="food"></div>
-    <div class="food"></div>
-
-
-
-</div>
     <div class="orderPane3">
         <label style="width: 70%; font-size: 20px; font-weight: bold;">套餐</label>
         <div class="btn-group" style="color: #111111" >
@@ -626,17 +635,19 @@
             <button type="button" class="btn btn-default" onclick="packageSorted('default')">默认排序</button>
         </div>
     </div>
-<div class="orderPane1" id="setPane">
+    <div class="orderPane1" id="setPane">
 
-    <div class="food">
-        <img src="../../image/restaurant_icon/Mcc.jpg" class="singleImg">
-        <label class="singleName" >汉堡</label>
-        <label class="singlePrice" >￥20.0</label>
-        <label class="singleNum" >库存：20</label>
-        <input type="text" class="shoppingNum">
-        <button class="btn btn-primary singleButton" >加入购物车</button>
+        <div class="food" title="Popover title"
+             data-container="body" data-toggle="popover" data-placement="top"
+             data-content="顶部的 Popover 中的一些内容" id="test" onclick="f()">
+            <img src="../../image/restaurant_icon/Mcc.jpg" class="singleImg">
+            <label class="singleName" >汉堡</label>
+            <label class="singlePrice" >￥20.0</label>
+            <label class="singleNum" >库存：20</label>
+            <input type="text" class="shoppingNum">
+            <button class="btn btn-primary singleButton" >加入购物车</button>
+        </div>
     </div>
-</div>
 </div>
 
 <div class="noticeT"><label style="font-weight: bold; font-size: 16px; color: white">商 家 公 告</label></div>
@@ -662,8 +673,6 @@
             </div>
             <div class="orderedFood"> </div>
             <div class="orderedFood"> </div>
-
-
         </div>
     </div>
     <div class="price" ><label style="margin-left: 50px ; margin-top:10px;font-size: 18px; font-weight: bold;
