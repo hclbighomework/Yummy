@@ -104,15 +104,16 @@ public class ShoppingController {
     @ResponseBody
     public Map<String, Object> getPackageInfo(@RequestParam Map<String, Object> map) {
         String rid = map.get("rid").toString();
-        String pName = map.get("pName").toString();
-        Restaurants restaurants = restaurantService.getRestaurantById(rid);
-        Packages packages = packageService.getPackageByNameAndRid(pName, restaurants.getRid());
-        for (Singles single: packages.getSinglesCollection()) {
-            single.setPackageNum(packageSingleService.getPackageSingle(packages.getPid(), single.getSid()).getNum());
-            //System.out.println(single.getPackageNum());
+        int pid = Integer.parseInt(map.get("pid").toString());
+        Packages packages = packageService.getPackageByID(pid);
+        StringBuilder sb = new StringBuilder("套餐详情：");
+        ArrayList<Singles> singles = (ArrayList<Singles>) packages.getSinglesCollection();
+        for (int i = 0; i < singles.size() - 1; i++) {
+            sb.append(singles.get(i).getName()).append("*").append(packageSingleService.getPackageSingle(pid, singles.get(i).getSid()).getNum()).append(",");
         }
+        sb.append(singles.get(singles.size() - 1).getName()).append("*").append(packageSingleService.getPackageSingle(pid, singles.get(singles.size() - 1).getSid()).getNum());
         Map<String, Object> res = new HashMap<>();
-        res.put("packageInfo", packages);
+        res.put("packageInfo", sb.toString());
         return res;
     }
 
